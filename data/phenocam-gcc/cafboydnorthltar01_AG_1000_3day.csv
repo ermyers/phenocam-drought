@@ -17,10 +17,10 @@
 # ROI Brightness Max: 665
 # Creation Date: 2022-07-28
 # Creation Time: 05:35:44
-# Update Date: 2024-10-29
-# Update Time: 11:06:35
-# Final Processing Date:: 2024-10-29
-# Final Processing Time:: 14:43:13
+# Update Date: 2025-03-04
+# Update Time: 11:05:55
+# Final Processing Date:: 2025-03-04
+# Final Processing Time:: 16:48:06
 #
 date,year,doy,image_count,midday_filename,midday_r,midday_g,midday_b,midday_gcc,midday_rcc,r_mean,r_std,g_mean,g_std,b_mean,b_std,gcc_mean,gcc_std,gcc_50,gcc_75,gcc_90,rcc_mean,rcc_std,rcc_50,rcc_75,rcc_90,max_solar_elev,snow_flag,outlierflag_gcc_mean,outlierflag_gcc_50,outlierflag_gcc_75,outlierflag_gcc_90,smooth_gcc_mean,smooth_gcc_50,smooth_gcc_75,smooth_gcc_90,smooth_rcc_mean,smooth_rcc_50,smooth_rcc_75,smooth_rcc_90,smooth_ci_gcc_mean,smooth_ci_gcc_50,smooth_ci_gcc_75,smooth_ci_gcc_90,smooth_ci_rcc_mean,smooth_ci_rcc_50,smooth_ci_rcc_75,smooth_ci_rcc_90,int_flag
 2017-06-16,2017,167,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,0.43605,0.43604,0.44219,0.44668,0.36058,0.36911,0.37534,0.38067,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,1

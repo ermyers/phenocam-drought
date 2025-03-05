@@ -19,8 +19,8 @@
 # Creation Time: 22:11:14
 # Update Date: 2018-03-12
 # Update Time: 06:01:02
-# Final Processing Date:: 2024-10-29
-# Final Processing Time:: 15:26:41
+# Final Processing Date:: 2025-03-04
+# Final Processing Time:: 18:16:20
 #
 date,year,doy,image_count,midday_filename,midday_r,midday_g,midday_b,midday_gcc,midday_rcc,r_mean,r_std,g_mean,g_std,b_mean,b_std,gcc_mean,gcc_std,gcc_50,gcc_75,gcc_90,rcc_mean,rcc_std,rcc_50,rcc_75,rcc_90,max_solar_elev,snow_flag,outlierflag_gcc_mean,outlierflag_gcc_50,outlierflag_gcc_75,outlierflag_gcc_90,smooth_gcc_mean,smooth_gcc_50,smooth_gcc_75,smooth_gcc_90,smooth_rcc_mean,smooth_rcc_50,smooth_rcc_75,smooth_rcc_90,smooth_ci_gcc_mean,smooth_ci_gcc_50,smooth_ci_gcc_75,smooth_ci_gcc_90,smooth_ci_rcc_mean,smooth_ci_rcc_50,smooth_ci_rcc_75,smooth_ci_rcc_90,int_flag
 2016-09-19,2016,263,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,0,0,0,0.3691,0.39387,0.37629,0.37984,0.36116,0.36068,0.38468,0.39253,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,1
