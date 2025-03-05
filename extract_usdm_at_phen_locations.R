@@ -1,5 +1,15 @@
 # Extract USDM data at PhenoCam point locations
 
+# USDM shapefiles are downloaded from the US Drought Monitor Webpage
+# For example, the download link for all USDM shapefiles in 2024 is:
+# https://droughtmonitor.unl.edu/data/shapefiles_m//2024_USDM_M.zip
+# A sample command to download USDM files into the folder of interest would be:
+# download.file("https://droughtmonitor.unl.edu/data/shapefiles_m//2024_USDM_M.zip", "data/usdm/2024/2024_USDM_M.zip")
+# Once downloaded, the yearly file unzips into individual zipped shapefiles, which also need to be unzipped
+
+# Code is easily parallelized by running it on one calendar year at a time (specified by year_list parameter)
+# Output dataframes are later combined together into one large dataframe in load_phenocam_usdm_data.R
+
 library(terra)
 library(lubridate)
 

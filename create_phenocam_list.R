@@ -39,9 +39,11 @@ type1_sites_3years_vect <- vect(type1_sites_3years, geom=c("lon","lat"), crs="ep
 type1_sites_4years_vect <- vect(type1_sites_4years, geom=c("lon","lat"), crs="epsg:4326")
 type1_sites_5years_vect <- vect(type1_sites_5years, geom=c("lon","lat"), crs="epsg:4326")
 
-# Load in USA county data...
+# Load in USA county data
+# Source: https://www2.census.gov/geo/tiger/TIGER2023/COUNTY/tl_2023_us_county.zip
 usa_counties_2023 <- vect("data/shapefiles/tl_2023_us_county.shp")
-# ...and reproject it into the same CRS as the phenocams
+
+# Reproject USA county data into the same CRS as the phenocams
 usa_counties_2023 <- project(usa_counties_2023,type1_sites_vect)
 
 # Subset phenocams using USA counties
