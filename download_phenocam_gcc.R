@@ -5,7 +5,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 library(phenocamr)
 
 # Load previous lists of phenocam data
-load("outputs/phenocam_lists.RData")
+load("outputs/phenocam_lists_02-27-2025.RData")
 
 # list <- type1_sitenames_5years_usa[-c(125, 127, 128, 137, 139, 142, 149, 152,
 #                                       159, 177, 180, 183, 185, 187, 188, 190,
