@@ -7,7 +7,7 @@
 # download.file("https://droughtmonitor.unl.edu/data/shapefiles_m//2024_USDM_M.zip", "data/usdm/2024/2024_USDM_M.zip")
 # Once downloaded, the yearly file unzips into individual zipped shapefiles, which also need to be unzipped
 
-# Code is easily parallelized by running it on one calendar year at a time (specified by year_list parameter)
+# Code is parallelized by running it on one calendar year at a time (specified by year_list parameter)
 # Output dataframes are later combined together into one large dataframe in load_phenocam_usdm_data.R
 
 library(terra)
@@ -26,7 +26,7 @@ type1_sites_usa_df <- as.data.frame(type1_sites_usa_vect)
 
 # Extract USDM values at different points
 #year_list <- c("2010","2011","2012","2013","2014","2015","2016","2017","2018","2019","2020","2021","2022","2023","2024")
-year_list <- c("2024")
+year_list <- c("2010")
 phen_usdm <- data.frame(matrix(ncol=5,nrow=0))
 colnames(phen_usdm) <- c("Phenocam","Date","Year","DOY","DM")
 
@@ -48,5 +48,5 @@ for (year in year_list){
   }
 }
 
-phen_usdm_2024 <- phen_usdm
-save(phen_usdm_2024, file="outputs/phen_usdm_2024.RData")
+phen_usdm_2010 <- phen_usdm
+save(phen_usdm_2010, file="outputs/phen_usdm_2010.RData")
