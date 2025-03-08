@@ -6,6 +6,10 @@
 # Phenocam USDM (phen_usdm): Includes USDM values for all Type I USA Phenocam sites
 # between the years of 2010-2024, along with ecoregion data for each phenocam.
 
+# Set working directory
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
+# Load packages
 library(stringr)
 library(dplyr)
 

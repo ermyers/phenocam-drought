@@ -4,6 +4,9 @@
 # throws a warning for peaks at very beginning and end of time series (but should
 # still return good results - these peaks will be eliminated at the check for 35% variation)
 
+# Set working directory
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
 # Load packages
 library(dplyr)
 library(pracma)
@@ -23,8 +26,10 @@ x <- c("Phenocam","Veg_Type","ROI","Year","Peak_GCC","Cumulative_GCC_yearly","Cu
 colnames(growing_seasons_phen) <- x
 
 # Loop over each phenocam
+
+# Create a list of unique phenocam ROIs
+#unique_phenocams <- phen_gcc %>% filter(Year >= 2016) %>% distinct(Phenocam,Veg_Type,ROI)
 unique_phenocams <- phen_gcc %>% distinct(Phenocam,Veg_Type,ROI)
-# unique_phenocams <- filter(phen_gcc, Phenocam=="ibp") %>% distinct(Phenocam,Veg_Type,ROI) # test with just one
 for (i in 1:nrow(unique_phenocams)){
   phenocam <- unique_phenocams$Phenocam[i]
   veg_type <- unique_phenocams$Veg_Type[i]
@@ -342,3 +347,107 @@ rm(cumulative_gcc_yearly, cumulative_gcc, new_row, phen_subset, unique_phenocams
 
 # Optional - save results
 save(growing_seasons_phen, growing_seasons_phen_number, growing_seasons_phen_ave, file = "outputs/growing_seasons_phen.RData")
+
+##########################
+# Limit data to 2016-2024
+##########################
+
+# Season start and end
+growing_seasons_phen <- filter(growing_seasons_phen, Year >= 2016)
+
+# No or multiple growing seasons
+growing_seasons_phen_number <- filter(growing_seasons_phen_number, Year >= 2016)
+
+# Typical growing season values (2016-2024 only)
+growing_seasons_phen_ave <- data.frame(matrix(ncol = 22, nrow = 0))
+x <- c("Phenocam","Veg_Type","ROI","Peak_GCC_mean","Cumulative_GCC_yearly_mean","Cumulative_GCC_mean","SOS_15_mean","SOS_25_mean",
+       "SOS_50_mean","Peak_mean","EOS_50_mean","EOS_25_mean","EOS_15_mean",
+       "Peak_GCC_std","SOS_15_std","SOS_25_std","SOS_50_std","Peak_std",
+       "EOS_50_std","EOS_25_std","EOS_15_std","Number_Years")
+colnames(growing_seasons_phen_ave) <- x
+
+unique_phenocams <- phen_gcc %>% filter(Year >= 2016) %>% distinct(Phenocam,Veg_Type,ROI)
+
+for (i in 1:nrow(unique_phenocams)){
+  phenocam <- unique_phenocams$Phenocam[i]
+  veg_type <- unique_phenocams$Veg_Type[i]
+  roi <- unique_phenocams$ROI[i]
+  phen_subset <- growing_seasons_phen %>% filter(Phenocam == phenocam, Veg_Type == veg_type, ROI == roi)
+  phen_subset <- mutate(phen_subset, SOS_15 = yday(SOS_15), SOS_25 = yday(SOS_25), SOS_50 = yday(SOS_50), Peak = yday(Peak), EOS_50 = yday(EOS_50), EOS_25 = yday(EOS_25), EOS_15 = yday(EOS_15))
+  print(paste("i = ",i," out of ",nrow(unique_phenocams),", phenocam = ",phenocam,", veg_type = ",veg_type," roi = ",roi,sep=""))
+  
+  # Combine multiple growing seasons if necessary
+  for(year in unique(phen_subset$Year)){
+    if (nrow(filter(phen_subset, Year==year)) > 1){
+      peak_gcc <- max(filter(phen_subset, Year==year)$Peak_GCC, na.rm = TRUE)
+      cumulative_gcc_yearly <- max(filter(phen_subset, Year==year)$Cumulative_GCC_yearly, na.rm = TRUE)
+      cumulative_gcc <- max(filter(phen_subset, Year==year)$Cumulative_GCC, na.rm = TRUE)
+      if(cumulative_gcc==-Inf){
+        cumulative_gcc <- NA
+      }
+      sos_15 <- min(filter(phen_subset, Year==year)$SOS_15, na.rm = TRUE)
+      sos_25 <- min(filter(phen_subset, Year==year)$SOS_25, na.rm = TRUE)
+      sos_50 <- min(filter(phen_subset, Year==year)$SOS_50, na.rm = TRUE)
+      peak <- filter(phen_subset, Year==year & Peak_GCC==peak_gcc)$Peak
+      eos_50 <- max(filter(phen_subset, Year==year)$EOS_50, na.rm = TRUE)
+      eos_25 <- max(filter(phen_subset, Year==year)$EOS_25, na.rm = TRUE)
+      eos_15 <- max(filter(phen_subset, Year==year)$EOS_15, na.rm = TRUE)
+      
+      new_row <- data.frame(Phenocam = phenocam,
+                            Veg_Type = veg_type,
+                            ROI = roi,
+                            Year = year,
+                            Peak_GCC = peak_gcc,
+                            Cumulative_GCC_yearly = cumulative_gcc_yearly,
+                            Cumulative_GCC = cumulative_gcc,
+                            SOS_15 = sos_15,
+                            SOS_25 = sos_25,
+                            SOS_50 = sos_50,
+                            Peak = peak,
+                            EOS_50 = eos_50,
+                            EOS_25 = eos_25,
+                            EOS_15 = eos_15,
+                            SOS_15_flag = filter(phen_subset, Year==year & SOS_15==sos_15)$SOS_15_flag,
+                            SOS_25_flag = filter(phen_subset, Year==year & SOS_25==sos_25)$SOS_25_flag,
+                            SOS_50_flag = filter(phen_subset, Year==year & SOS_50==sos_50)$SOS_50_flag,
+                            Peak_flag = filter(phen_subset, Year==year & Peak==peak)$Peak_flag,
+                            EOS_50_flag = filter(phen_subset, Year==year & EOS_50==eos_50)$EOS_50_flag,
+                            EOS_25_flag = filter(phen_subset, Year==year & EOS_25==eos_25)$EOS_25_flag,
+                            EOS_15_flag = filter(phen_subset, Year==year & EOS_15==eos_15)$EOS_15_flag)
+      phen_subset <- filter(phen_subset, Year != year)
+      phen_subset <- rbind(phen_subset, new_row)
+      rm(new_row)
+    }
+  }
+  
+  # Calculate average values and add to typical growing seasons
+  new_row <- data.frame(Phenocam = phenocam,
+                        Veg_Type = veg_type,
+                        ROI = roi,
+                        Peak_GCC_mean = mean(phen_subset$Peak_GCC, na.rm=TRUE),
+                        Cumulative_GCC_yearly_mean = mean(phen_subset$Cumulative_GCC_yearly, na.rm=TRUE),
+                        Cumulative_GCC_mean = mean(phen_subset$Cumulative_GCC, na.rm=TRUE),
+                        SOS_15_mean = mean(phen_subset$SOS_15, na.rm=TRUE),
+                        SOS_25_mean = mean(phen_subset$SOS_25, na.rm=TRUE),
+                        SOS_50_mean = mean(phen_subset$SOS_50, na.rm=TRUE),
+                        Peak_mean = mean(phen_subset$Peak, na.rm=TRUE),
+                        EOS_50_mean = mean(phen_subset$EOS_50, na.rm=TRUE),
+                        EOS_25_mean = mean(phen_subset$EOS_25, na.rm=TRUE),
+                        EOS_15_mean = mean(phen_subset$EOS_15, na.rm=TRUE),
+                        Peak_GCC_std = sd(phen_subset$Peak_GCC, na.rm=TRUE),
+                        SOS_15_std = sd(phen_subset$SOS_15, na.rm=TRUE),
+                        SOS_25_std = sd(phen_subset$SOS_25, na.rm=TRUE),
+                        SOS_50_std = sd(phen_subset$SOS_50, na.rm=TRUE),
+                        Peak_std = sd(phen_subset$Peak, na.rm=TRUE),
+                        EOS_50_std = sd(phen_subset$EOS_50, na.rm=TRUE),
+                        EOS_25_std = sd(phen_subset$EOS_25, na.rm=TRUE),
+                        EOS_15_std = sd(phen_subset$EOS_15, na.rm=TRUE),
+                        Number_Years = nrow(phen_subset))
+  growing_seasons_phen_ave <- rbind(growing_seasons_phen_ave,new_row)
+}
+
+rm(cumulative_gcc_yearly, cumulative_gcc, new_row, phen_subset, unique_phenocams, eos_15, eos_25, eos_50, 
+   i, peak, peak_gcc, phenocam, roi, sos_15, sos_25, sos_50, veg_type, x, year)
+
+# Save results
+save(growing_seasons_phen, growing_seasons_phen_number, growing_seasons_phen_ave, file = "outputs/growing_seasons_phen_2016_to_2024.RData")

@@ -6,8 +6,10 @@
 
 # The list will be further refined manually later on in the process.
 
+# Set working directory
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
+# Load packages
 library(phenocamapi)
 # installed via following code lines:
 # if(!require(devtools)) install.packages('devtools')
@@ -21,6 +23,9 @@ site_metadata <- get_phenos()
 # Filter list of phenocam sites
 # All Type I sites
 type1_sites <- dplyr::filter(site_metadata,site_type=="I")
+
+# Save Type I sites as dataframe
+save(type1_sites, file = "outputs/type1_sites.RData")
 
 # Remove NEON DP1.00042 understory
 type1_sites_no_understory <- dplyr::filter(type1_sites,!grepl('DP1.00042', site))
