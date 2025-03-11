@@ -12,16 +12,17 @@ library(sf)
 library(lubridate)
 
 # Load data
-load("outputs/growing_seasons_phen.RData")
+load("outputs/growing_seasons_phen_2016_to_2024.RData")
 #load("outputs/phen_usdm.RData")
 load("outputs/drought_statistics.RData")
+load("outputs/vpd_statistics.RData")
 
 ###################################
 # Filter data according to ROI list
 ###################################
 
 # Load list of manually filtered PhenoCam ROIs
-unique_phenocam_rois_annotated <- read.csv("data/unique_phenocam_rois_annotated.csv")
+unique_phenocam_rois_annotated <- read.csv("data/unique_phenocam_rois_annotated_03-09-2025.csv")
 
 # Filter list to include only primary ROIs
 primary_rois <- filter(unique_phenocam_rois_annotated, action=="keep" & rank==1)
@@ -60,11 +61,18 @@ for (i in 1:nrow(primary_rois)){
 rm(i, phenocam, roi, veg_type)
 
 drought_statistics_filtered <- filter(drought_statistics, Phenocam %in% primary_rois$Phenocam)
+vpd_statistics_filtered <- filter(vpd_statistics, Phenocam %in% primary_rois$Phenocam)
 phen_usdm_modified_filtered <- filter(phen_usdm_modified, Phenocam %in% primary_rois$Phenocam)
 
 # Remove unfiltered data
 rm(drought_statistics, growing_seasons_phen, growing_seasons_phen_ave,
-   growing_seasons_phen_number, phen_usdm_modified)
+   growing_seasons_phen_number, phen_usdm_modified, vpd_statistics)
+
+# Add Primary_Veg_Type field to filtered dataframes
+# Primary_Veg_Type is the same as Veg_Type for most ROIs, but assigns a veg type to XX ROIs and a few other ROIs
+growing_seasons_phen_ave_filtered <- left_join(growing_seasons_phen_ave_filtered,select(primary_rois,Phenocam,Veg_Type,Primary_Veg_Type),by=join_by(Phenocam,Veg_Type))
+growing_seasons_phen_filtered <- left_join(growing_seasons_phen_filtered,select(primary_rois,Phenocam,Veg_Type,Primary_Veg_Type),by=join_by(Phenocam,Veg_Type))
+growing_seasons_phen_number_filtered <- left_join(growing_seasons_phen_number_filtered,select(primary_rois,Phenocam,Veg_Type,Primary_Veg_Type),by=join_by(Phenocam,Veg_Type))
 
 ###########################################
 # Calculate drought statistics by site-year
@@ -105,20 +113,121 @@ for(i in 1:nrow(growing_seasons_phen_usdm_filtered)){
 
 rm(i,phenocam,year,temp_phen_usdm,cumulative_dm,cumulative_dm_with_d0,drought_weeks)
 
-# Plot cumulative DM vs cumulative and peak GCC by veg type
+#####################
+# Add VPD statistics 
+#####################
+
+growing_seasons_phen_usdm_filtered <- left_join(growing_seasons_phen_usdm_filtered, vpd_statistics_filtered, by=join_by(Phenocam,Year))
+
+######################################################
+# Calculate site numbers by primary veg type and year
+######################################################
+
+site_numbers <- growing_seasons_phen_usdm_filtered %>% count(Primary_Veg_Type,Year, sort=TRUE)
+
+###################################################################
+# Scatter plots (Phenocam metrics vs. drought metrics by veg type)
+###################################################################
+
+# Temporary data for all plots
 temp_data <- mutate(growing_seasons_phen_usdm_filtered,GSL_25 = EOS_25-SOS_25, SOS_25_DOY = yday(SOS_25))
 
-facet_peak <- ggplot(data=filter(temp_data, Veg_Type=="AG" | Veg_Type=="EN" | Veg_Type=="DB" | Veg_Type=="GR" | Veg_Type=="SH"), aes(x=Cumulative_DM,y=Peak_GCC)) +
+# Peak GCC vs. Cumulative DM
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM,y=Peak_GCC)) +
   geom_point() +
   geom_smooth(method = lm) +
-  facet_wrap(~Veg_Type,ncol=2) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
   ggtitle("Peak GCC vs. Cumulative DM (not including D0)")
 facet_peak
 
-facet_peak <- ggplot(data=filter(temp_data, Veg_Type=="AG" | Veg_Type=="EN" | Veg_Type=="DB" | Veg_Type=="GR" | Veg_Type=="SH"), aes(x=Cumulative_DM_with_D0,y=Peak_GCC)) +
+# Peak GCC vs. Weighted Average DM
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM_with_D0,y=Peak_GCC)) +
   geom_point() +
   geom_smooth(method = lm) +
-  facet_wrap(~Veg_Type,ncol=2) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Peak GCC vs. Weighted Average DM (including D0)")
+facet_peak
+
+# Peak GCC vs. Mean VPD Anomaly
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Mean_VPD_Anomaly,y=Peak_GCC)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Peak GCC vs. Mean VPD Anomaly")
+facet_peak
+
+# Peak GCC vs. Anomaly in Maximum VPD
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Max_VPD_Anomaly,y=Peak_GCC)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Peak GCC vs. Anomaly in Site-Year Maximum VPD")
+facet_peak
+
+# Peak GCC vs. Anomaly in Cumulative VPD
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_VPD_Anomaly,y=Peak_GCC)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Peak GCC vs. Anomaly in Site-Year Cumulative VPD")
+facet_peak
+
+#########################
+# Linear Model Summaries
+#########################
+
+# Cumulative DM, including D0
+
+# AG
+summary(lm(Peak_GCC ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type=="AG")))
+# DB
+summary(lm(Peak_GCC ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type=="DB")))
+# EN
+summary(lm(Peak_GCC ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type=="EN")))
+# GR
+summary(lm(Peak_GCC ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type=="GR")))
+# SH
+summary(lm(Peak_GCC ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type=="SH")))
+
+# Mean VPD Anomaly
+
+# AG
+summary(lm(Peak_GCC ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="AG")))
+# DB
+summary(lm(Peak_GCC ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="DB")))
+# EN
+summary(lm(Peak_GCC ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="EN")))
+# GR
+summary(lm(Peak_GCC ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="GR")))
+# SH
+summary(lm(Peak_GCC ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="SH")))
+
+# Cumulative VPD Anomaly
+
+# AG
+summary(lm(Peak_GCC ~ Cumulative_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="AG")))
+# DB
+summary(lm(Peak_GCC ~ Cumulative_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="DB")))
+# EN
+summary(lm(Peak_GCC ~ Cumulative_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="EN")))
+# GR
+summary(lm(Peak_GCC ~ Cumulative_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="GR")))
+# SH
+summary(lm(Peak_GCC ~ Cumulative_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="SH")))
+
+###################################
+# Other plots (testing with Darren)
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM,y=Peak_GCC, col = Year)) +
+  geom_point() +
+  geom_smooth(method = loess) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Peak GCC vs. Cumulative DM (not including D0)")
+facet_peak
+
+facet_peak <- ggplot(data=filter(temp_data, Veg_Type=="AG" | Veg_Type=="EN" | Veg_Type=="DB" | Veg_Type=="GR" | Veg_Type=="SH"), aes(x=Cumulative_DM_with_D0,y=Peak_GCC, col = as.factor(Year))) +
+  geom_point() +
+  geom_smooth(method = loess) +
+  facet_wrap(~Veg_Type,ncol=2,scales = "free_y") +
   ggtitle("Peak GCC vs. Weighted Average DM (including D0)")
 facet_peak
 

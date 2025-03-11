@@ -1,0 +1,399 @@
+Phenocam,Veg_Type,Primary_Veg_Type,ROI,lat,lon,start_year,end_year,action,rank,further_review,notes
+alligatorriver,DB,DB,1000,35.7879,-75.9038,2016,2021,keep,1,,
+arbutuslakeinlet,DB,DB,2000,43.99336,-74.24527,2018,2023,remove,,,insufficient continuous data
+arbutuslakeinlet,EN,EN,2000,43.99336,-74.24527,2018,2023,remove,,,insufficient continuous data
+archboldavir,AG,GR,1000,27.176064,-81.21958,2017,2024,keep,2,yes,"archbold sites close together, a. virginicus field - relabel as GR?"
+archboldavirx,AG,GR,1000,27.166627,-81.219828,2016,2023,keep,1,yes,"archbold sites close together, ungrazed a. virginicus field - relabel as GR?"
+archboldbahia,AG,GR,1000,27.1656,-81.216112,2017,2024,keep,1,yes,"archbold sites close together - p. notatum, relabel as GR?"
+archboldpnot,AG,GR,1000,27.187948,-81.200345,2016,2024,keep,2,yes,"archbold sites close together - p. notatum, relabel as GR?"
+archboldpnotx,AG,GR,1000,27.180677,-81.20068,2016,2024,keep,1,yes,"archbold sites close together - ungrazed p. notatum, relabel as GR?"
+archboldwet,AG,GR,1000,27.19,-81.21,2017,2023,remove,,,insufficient lat/lon precision
+arsbrooks10,AG,AG,1000,41.9749,-93.6905,2020,2024,keep,1,yes,arsbrooks sites close together
+arsbrooks11,AG,AG,1000,41.9744,-93.6937,2020,2024,keep,2,yes,arsbrooks sites close together
+arscolesnorth,AG,AG,1000,42.4884,-93.5225,2019,2024,keep,2,yes,arscoles sites close together
+arscolessouth,AG,AG,1000,42.4816,-93.5235,2019,2024,keep,1,yes,arscoles sites close together
+arsgacp1,AG,AG,1000,31.5109,-83.6179,2016,2024,keep,1,yes,"arsgacp sites close together, multiple growing seasons visible"
+arsgacp3,AG,AG,1000,31.7563,-83.7516,2018,2024,keep,1,yes,arsgacp sites close together
+arsgacp4,AG,AG,2000,31.7093,-83.7287,2020,2024,keep,1,yes,arsgacp sites close together
+arsgreatbasinltar098,SH,SH,1000,43.1675,-116.7132,2017,2021,remove,,,
+arsgreatbasinltar177,SH,SH,1000,43.0645,-116.7484,2019,2021,remove,,,
+arsltarmdcr,AG,AG,1000,39.0587,-75.8513,2017,2024,keep,1,yes,irrigated
+arsltarmdcrnatw,WL,WL,1000,39.0575,-75.7531,2019,2024,keep,1,,
+arsltarmdcrnatw,WL,WL,1001,39.0575,-75.7531,2019,2024,keep,2,,alternate ROI
+arsltarmdcrprcw,AG,AG,1000,39.0667,-75.7609,2019,2024,keep,1,yes,"corn/soybean rotation, multiple growing seasons visible"
+arsltarmdcrresw,AG,AG,1000,39.0549,-75.7532,2019,2024,keep,1,,
+arsltarucbec1,AG,AG,1000,40.7537,-78.0057,2019,2024,keep,1,yes,"arsltarucbec sites close together, multiple growing seasons visible 2020-2021"
+arsltarucbec2,AG,AG,1000,40.7558,-77.9999,2019,2024,keep,2,yes,"arsltarucbec sites close together, multiple growing seasons visible 2020-2022"
+arsmnswanlake1,AG,AG,1000,45.684508,-95.799703,2016,2024,keep,1,,
+arsmorris1,AG,AG,1000,45.6167,-96.1269,2018,2024,keep,1,yes,"arsmorris sites close together, this is the cleanest time-series"
+arsmorris2,AG,AG,1000,45.627,-96.127,2018,2024,keep,2,yes,arsmorris sites close together
+arsmorris3,AG,AG,1000,45.6091,-96.1265,2020,2024,keep,2,yes,"arsmorris sites close together, this is the shortest time-series"
+arsope3ltar,AG,AG,1000,39.0309,-76.8442,2017,2024,keep,1,,
+ashburnham,DB,DB,2000,42.6029,-71.926,2017,2024,keep,1,yes,small ROI
+asuhighlands,DB,DB,1000,36.2076,-81.7032,2017,2024,keep,1,,
+asuhighlands,DB,DB,1001,36.2076,-81.7032,2017,2024,keep,3,,
+asuhighlands,EN,EN,1000,36.2076,-81.7032,2017,2024,keep,2,,
+austincary,EN,EN,1000,29.738,-82.2188,2016,2020,keep,1,,high noise
+barrow,TN,TN,1000,71.28007453,-156.6091492,2018,2018,remove,,,
+bartlettir,DB,DB,2000,44.0646,-71.2881,2017,2024,keep,1,,
+bartlettir,EN,EN,2000,44.0646,-71.2881,2017,2020,remove,,,
+bigtraillake,EN,EN,1000,64.9194,-147.822,2021,2024,remove,,,insufficient number of years
+bitterbrush001,GR,GR,1000,48.154,-119.9456,2021,2024,remove,,,insufficient number of years
+blackrockforest,DB,DB,1000,41.3974,-74.0239,2020,2024,keep,1,,just under 5 years - may be screened out during analysis
+bnzthermokarstbog,EN,EN,1000,64.6955,-148.3208,2022,2024,remove,,,
+bnzthermokarstbog,EN,EN,1001,64.6955,-148.3208,2022,2024,remove,,,
+bostoncommon,DB,DB,3000,42.355912,-71.064145,2018,2024,keep,1,,
+bostonu,DB,DB,2000,42.35041,-71.10438,2019,2024,keep,1,,
+bouldinalfalfa,AG,AG,1000,38.0985,-121.4993,2017,2024,keep,1,yes,"bouldin sites close together, multiple green-ups visible"
+bouldincorn,AG,AG,1000,38.109,-121.535,2018,2024,keep,1,yes,bouldin sites close together
+brackishimpoundment,WL,WL,1000,33.2015,-79.2973,2020,2024,remove,,,
+bullshoals,DB,DB,1000,36.562833,-93.06663,2016,2024,keep,1,,
+bullshoals,GR,GR,1000,36.562833,-93.06663,2016,2024,keep,2,,
+burnssagebrush,SH,SH,1000,43.4712,-119.6909,2016,2022,keep,1,,
+butte,GR,GR,1000,45.95304,-112.47964,2016,2019,remove,,,
+butte,GR,GR,2000,45.95304,-112.47964,2020,2024,keep,1,yes,just under 5 years - may be screened out during analysis
+cafboydnorthltar01,AG,AG,1000,46.755104,-117.126052,2018,2024,keep,1,,
+cafcookeastltar01,AG,AG,1000,46.78152,-117.0821,2017,2024,keep,1,yes,cafcook sites close together
+cafcookwestltar01,AG,AG,1000,46.784037,-117.09083,2018,2024,keep,2,yes,cafcook sites close together
+caryinstitute,DB,DB,1000,41.7839,-73.7341,2016,2024,keep,1,,
+centralredwoods1,EN,EN,1001,38.632272,-123.301511,2022,2024,remove,,,
+cperagm,GR,GR,1000,40.8402,-104.7672,2016,2024,keep,2,yes,"cper sites close together, adaptive grazing management, dropped in favor of NEON camera"
+cpertgm,GR,GR,1000,40.833,-104.76,2016,2024,keep,2,yes,"cper sites close together, traditional grazing management, dropped in favor of NEON camera"
+cperuvb,GR,GR,1000,40.8055764,-104.7558542,2016,2024,keep,2,yes,"cper sites close together, uvb?, dropped in favor of NEON camera"
+delnortecounty1,EN,EN,1000,41.6,-124.1,2020,2024,remove,,,insufficient lat/lon precision
+delnortecounty2,EN,EN,1000,41.6,-124.1,2020,2024,remove,,,insufficient lat/lon precision
+doverdesaltmarsh,DB,DB,1000,39.0888,-75.4368,2020,2024,keep,2,,
+doverdesaltmarsh,WL,WL,1000,39.0888,-75.4368,2020,2024,keep,1,,just under 5 years - may be screened out during analysis
+downerwoods,DB,DB,1000,43.07938,-87.88076,2016,2020,keep,1,,
+dukehw,DB,DB,1000,35.973583,-79.100371,2016,2024,keep,1,,
+ecb1,AG,AG,1000,41.5348,-84.8068,2021,2024,remove,,,
+ecb2,AG,AG,1000,41.5321,-84.808,2021,2024,remove,,,
+elverde,EB,EB,1000,18.320654,-65.8199,2016,2020,remove,,,Puerto Rico
+flagstaff,EN,EN,1000,35.17961521,-111.6049032,2020,2024,keep,1,,
+flagstaff,GR,GR,1000,35.17961521,-111.6049032,2020,2024,keep,2,,
+flagstaffchimneysprings,EN,EN,1000,35.257296,-111.678542,2021,2024,remove,,,insufficient number of years
+flagstaffchimneysprings,GR,GR,1000,35.257296,-111.678542,2021,2024,remove,,,insufficient number of years
+forbes,GR,GR,1000,39.232,-121.2972,2018,2022,remove,,,insufficient number of years
+gcesapelo,WL,WL,1000,31.4440444,-81.283528,2016,2024,keep,1,,
+glennrice,AG,AG,1000,39.5944,-122.0253,2024,2024,remove,,,
+goodnow,EN,EN,1000,43.96018,-74.20994,2016,2022,keep,1,yes,high noise
+goodwater,AG,AG,1000,39.22848,-92.11936,2016,2024,keep,1,,
+goodwater,AG,AG,1001,39.22848,-92.11936,2016,2024,keep,2,,
+goodwaterbau,AG,AG,1000,39.23115,-92.15216,2019,2024,keep,1,,
+grandteton,SH,SH,1000,43.915017,-110.578036,2016,2020,keep,1,yes,some gaps in timeseries during winter
+grca1pj,EN,EN,1000,36.0241,-112.2211,2018,2024,keep,1,,
+grca1pj,EN,EN,1001,36.0241,-112.2211,2018,2023,keep,3,,
+grca1pj,EN,EN,1002,36.0241,-112.2211,2018,2023,keep,2,,
+greenridge1,DB,DB,1000,39.6905,-78.4067,2018,2022,keep,1,yes,some gaps in timeseries during winter
+haha,UN,UN,1000,21.37,-158.17,2018,2024,remove,,,insufficient lat/lon precision
+harvard,DB,DB,0001,42.5378,-72.1715,2016,2024,remove,,,
+harvard,DB,DB,1000,42.5378,-72.1715,2016,2024,keep,1,,
+harvard,EN,EN,0001,42.5378,-72.1715,2016,2024,remove,,,
+harvardbarn,DB,DB,1000,42.53532,-72.1899,2016,2024,keep,1,,
+harvardbarn,EN,EN,1000,42.53532,-72.1899,2016,2024,keep,2,,
+harvardbarn2,DB,DB,1000,42.53532,-72.1899,2016,2019,remove,,,
+harvardbarn2,DB,DB,2000,42.53532,-72.1899,2021,2024,remove,,,
+harvardbarn2,EN,EN,1000,42.53532,-72.1899,2016,2019,remove,,,
+harvardbarn2,EN,EN,2000,42.53532,-72.1899,2021,2024,remove,,,
+harvardfarmnorth,AG,GR,1000,42.520465,-72.182242,2016,2024,keep,1,yes,"harvardfarm sites close together, primarily GR"
+harvardfarmsouth,AG,GR,1000,42.522466,-72.182339,2016,2023,keep,2,yes,"harvardfarm sites close together, primarily GR"
+harvardfarmsouth,DB,DB,1000,42.522466,-72.182339,2016,2023,keep,2,yes,harvardfarm sites close together
+harvardgarden,AG,AG,1000,42.5291,-72.1863,2016,2020,remove,,,insufficient number of years
+harvardhemlock,DB,DB,1000,42.539,-72.18,2016,2019,remove,,,
+harvardhemlock,EN,EN,2000,42.539,-72.18,2016,2019,remove,,,
+harvardhemlock2,EN,EN,1000,42.539407,-72.177976,2016,2023,keep,1,,
+harvardlph,DB,DB,3000,42.542,-72.185,2016,2021,keep,1,,
+hobcawclearcutlongleaf,EN,EN,1000,33.3486,-79.232,2019,2024,keep,2,yes,forest recovering from clear cut - changing GCC pattern
+hobcawmaturelongleaf,EN,EN,1000,33.3242,-79.2439,2019,2024,keep,1,,
+homesteadsprings,AG,AG,2000,37.2009,-92.9937,2022,2024,remove,,,insufficient number of years
+honouliuli,EB,EB,1000,21.37,-158.15,2018,2024,remove,,,insufficient lat/lon precision
+howland1,EN,EN,3000,45.2041,-68.7403,2016,2024,keep,1,,howland sites are close together
+howland2,DB,DB,2000,45.2128,-68.7418,2016,2021,keep,2,,howland sites are close together
+hubbardbrook,DB,DB,3000,43.9438,-71.701,2018,2024,keep,1,,
+hubbardbrook,DB,DB,3001,43.9438,-71.701,2018,2024,remove,,,
+humnokericea,AG,AG,1000,34.585192,-91.751684,2016,2024,keep,2,yes,humnokerice sites are close together
+humnokericec,AG,AG,1000,34.588853,-91.7516729,2016,2024,keep,1,yes,"humnokerice sites are close together, this site has more complete growing seasons"
+huyckpreserveny,DB,DB,1000,42.5266,-74.1587,2016,2024,keep,2,,
+huyckpreserveny,EN,EN,1000,42.5266,-74.1587,2016,2024,keep,1,,
+hwmo1,DB,DB,1000,20.0212,-155.7331,2020,2024,remove,,,Hawaii
+hwmo1,GR,GR,1000,20.0212,-155.7331,2020,2024,remove,,,Hawaii
+hwmo5,GR,GR,1000,20.1117,-155.8151,2020,2024,remove,,,Hawaii
+ibp,GR,GR,1000,32.589,-106.847,2016,2024,keep,2,,
+ibp,SH,SH,1000,32.589,-106.847,2016,2024,keep,3,,
+ibp,SH,SH,1001,32.589,-106.847,2016,2023,remove,,,
+ibp,SH,SH,1002,32.589,-106.847,2016,2024,remove,,,
+ibp,XX,GR,1000,32.589,-106.847,2016,2024,keep,1,,designate as primarily GR
+imcrkridge0,TN,TN,1000,68.60681,-149.2958,2017,2017,remove,,,
+imcrktussock,TN,TN,1000,68.60633,-149.30408,2016,2016,remove,,,
+jasperridge,GR,GR,2000,37.402028,-122.22104,2017,2024,keep,1,,
+jerbajada,SH,SH,1000,32.57992,-106.633793,2016,2024,keep,1,,
+jergrassland,GR,GR,1000,32.5833,-106.8333,2019,2024,keep,2,,
+jergrassland,XX,GR,1000,32.5833,-106.8333,2019,2024,keep,1,,designate as primarily GR
+jernort,NV,NV,1000,32.619,-106.788,2016,2024,remove,,,bare ground
+jernort,SH,SH,2000,32.619,-106.788,2020,2024,keep,2,,
+jernort,XX,SH,1000,32.619,-106.788,2016,2024,keep,1,,designate as primarily SH
+jernovel,GR,GR,1000,32.6335,-106.8334,2019,2024,keep,3,,
+jernovel,SH,SH,1000,32.6335,-106.8334,2019,2024,keep,2,,
+jernovel,XX,SH,1000,32.6335,-106.8334,2019,2024,keep,1,,designate as primarily SH
+jernwern,NV,NV,1000,32.6271,-106.7387,2018,2024,remove,,,bare ground
+jernwern,SH,SH,1000,32.6271,-106.7387,2018,2024,keep,2,,
+jernwern,XX,SH,1000,32.6271,-106.7387,2018,2024,keep,1,,designate as primarily SH
+jersand,SH,SH,1000,32.515,-106.798,2016,2024,keep,1,,
+jershrubland,SH,SH,1000,32.6502,-106.8334,2019,2024,keep,2,,
+jershrubland,XX,SH,1000,32.6502,-106.8334,2019,2024,keep,1,,designate as primarily SH
+junipersavannah,GR,GR,1000,34.4254,-105.8615,2022,2024,remove,,,
+junipersavannah,SH,SH,1000,34.4254,-105.8615,2022,2024,remove,,,
+kamuela2,GR,GR,1000,20.014959,-155.661139,2019,2022,remove,,,Hawaii
+kansas,GR,GR,1000,39.0561,-95.1907,2016,2019,remove,,,
+kelloggcorn,AG,AG,1000,42.437536,-85.3225472,2016,2019,remove,,,
+kendall,GR,GR,1000,31.73652,-109.94185,2016,2024,keep,1,,
+kendall,SH,SH,1000,31.73652,-109.94185,2016,2024,keep,2,,
+konza,GR,GR,1000,39.0824,-96.5603,2016,2018,remove,,,
+laupahoehoe,EB,EB,1000,19.9322,-155.2912,2017,2023,remove,,,Hawaii
+ldeocam,DB,DB,1000,41.0039,-73.9053,2021,2024,remove,,,
+lostcreek,WL,WL,1000,46.0827,-89.9792,2016,2024,keep,1,,
+luckyhills,SH,SH,4000,31.743896,-110.052023,2020,2024,keep,1,,
+macleish,DB,DB,1000,42.4484,-72.6804,2017,2022,keep,1,,
+macordway,DB,DB,1000,44.8106,-93.0272,2020,2024,keep,2,,
+macordway,GR,GR,1000,44.8106,-93.0272,2020,2024,keep,1,,
+macordway,WL,WL,1000,44.8106,-93.0272,2020,2024,keep,3,,
+mandanh5,AG,AG,1000,46.775423,-100.95109,2016,2024,keep,1,yes,mandan sites are close together
+mandani2,AG,AG,1000,46.7614,-100.9257,2016,2024,keep,1,yes,mandan sites are close together
+manilacotton,AG,AG,1000,35.8872,-90.1371,2017,2023,keep,1,,
+mead1,AG,AG,1000,41.1651,-96.4766,2017,2024,keep,2,yes,irrigated maize
+mead2,AG,AG,1000,41.1649,-96.4701,2017,2022,keep,3,yes,irrigated maize-soybean rotation
+mead3,AG,AG,1000,41.1797,-96.4397,2017,2024,keep,1,yes,rainfed maize-soybean rotation
+meadpasture,AG,GR,1000,41.1447,-96.4616,2017,2024,keep,1,yes,designate as grass
+meadpasturese,AG,AG,1000,41.1447,-96.4616,2019,2024,keep,3,,
+meadpasturesw,AG,AG,1000,41.1447,-96.4616,2019,2024,keep,2,,
+missouriozarks,DB,DB,1000,38.7441,-92.2,2016,2024,keep,2,,
+missouriozarks,EN,EN,1000,38.7441,-92.2,2016,2024,keep,1,,
+morganmonroe,DB,DB,1000,39.3231,-86.4131,2016,2024,keep,1,,
+morganmonroe2,DB,DB,1000,39.3231,-86.4131,2017,2023,keep,2,,morganmonroe sites are close together
+nahuku,EB,EB,1000,19.415187,-155.238383,2016,2021,remove,,,Hawaii
+nationalelkrefuge,GR,GR,1000,43.488931,-110.737824,2016,2024,keep,1,,
+ncssm,DB,DB,2000,36.018446,-78.92075,2016,2024,keep,1,yes,small ROI
+NEON.D01.BART.DP1.00033,DB,DB,1000,44.063869,-71.287375,2017,2024,keep,1,,
+NEON.D01.BART.DP1.00033,EN,EN,1000,44.063869,-71.287375,2017,2024,keep,2,,
+NEON.D01.HARV.DP1.00033,DB,DB,1000,42.536911,-72.17265,2017,2024,keep,1,,
+NEON.D01.HARV.DP1.00033,EN,EN,1000,42.536911,-72.17265,2017,2021,keep,2,,
+NEON.D02.BLAN.DP1.00033,DB,DB,1000,39.033698,-78.041788,2017,2024,keep,1,yes,site is an even mix of DB and EN
+NEON.D02.BLAN.DP1.00033,EN,EN,1000,39.033698,-78.041788,2017,2024,keep,2,yes,site is an even mix of DB and EN
+NEON.D02.SCBI.DP1.00033,DB,DB,1000,38.892925,-78.139494,2017,2024,keep,1,,
+NEON.D02.SERC.DP1.00033,DB,DB,1000,38.89008,-76.56001,2016,2024,keep,1,,
+NEON.D03.BARC.DP1.20002,WL,WL,2000,29.676473,-82.009089,2019,2024,keep,1,,
+NEON.D03.DSNY.DP1.00033,GR,GR,1000,28.12505,-81.43619,2017,2024,keep,1,,
+NEON.D03.FLNT.DP1.20002,DB,DB,1000,31.185424,-84.437403,2021,2024,remove,,,insufficient number of years
+NEON.D03.JERC.DP1.00033,DB,DB,1000,31.194839,-84.468623,2017,2024,keep,1,yes,impacted by controlled burn in 2023
+NEON.D03.JERC.DP1.00033,EN,EN,2000,31.194839,-84.468623,2019,2024,keep,2,yes,"more EN than DB in scene, but EN ROI is smaller"
+NEON.D03.OSBS.DP1.00033,EN,EN,1000,29.689282,-81.993431,2017,2024,keep,2,,
+NEON.D03.OSBS.DP1.00033,EN,EN,1001,29.689282,-81.993431,2017,2024,keep,1,,
+NEON.D03.OSBS.DP1.00033,EN,EN,1002,29.689282,-81.993431,2017,2024,keep,3,,
+NEON.D03.SUGG.DP1.20002,WL,WL,1000,29.687054,-82.016171,2021,2024,remove,,,
+NEON.D04.GUAN.DP1.00033,EB,EB,1000,17.96955,-66.8687,2017,2024,remove,,,Puerto Rico
+NEON.D04.LAJA.DP1.00033,AG,AG,1000,18.021261,-67.076889,2017,2024,remove,,,Puerto Rico
+NEON.D05.CRAM.DP1.20002,WL,WL,2000,46.21111,-89.47825,2020,2024,keep,1,,
+NEON.D05.STEI.DP1.00033,DB,DB,1000,45.50894,-89.58637,2018,2024,keep,1,,
+NEON.D05.STEI.DP1.00033,EN,EN,1000,45.50894,-89.58637,2018,2024,keep,2,,
+NEON.D05.TREE.DP1.00033,DB,DB,1000,45.49373,-89.58572,2017,2024,keep,1,,
+NEON.D05.UNDE.DP1.00033,DB,DB,1000,46.23391,-89.537254,2017,2024,keep,1,,
+NEON.D06.KING.DP1.20002,WL,WL,2000,39.10506,-96.60336,2020,2024,keep,1,yes,understory plants next to creek
+NEON.D06.KONA.DP1.00033,AG,AG,1000,39.110446,-96.612935,2016,2024,keep,1,,
+NEON.D06.KONZ.DP1.00033,GR,GR,1000,39.10077,-96.56309,2017,2024,keep,1,,
+NEON.D06.UKFS.DP1.00033,DB,DB,1000,39.040431,-95.19215,2019,2024,keep,1,,
+NEON.D06.UKFS.DP1.00033,EN,EN,1000,39.040431,-95.19215,2019,2024,keep,2,,
+NEON.D07.GRSM.DP1.00033,DB,DB,1000,35.68896,-83.50195,2017,2024,keep,1,,
+NEON.D07.MLBS.DP1.00033,DB,DB,2000,37.378314,-80.524847,2018,2024,keep,1,,
+NEON.D07.ORNL.DP1.00033,DB,DB,1000,35.964128,-84.282588,2017,2024,keep,1,,
+NEON.D07.WALK.DP1.20002,WL,WL,1000,35.95947,-84.28041,2017,2024,keep,1,yes,understory plants next to creek
+NEON.D08.BLWA.DP1.20002,DB,DB,1000,32.541529,-87.798151,2021,2024,remove,,,insufficient number of years
+NEON.D08.DELA.DP1.00033,DB,DB,1000,32.541727,-87.803877,2017,2024,keep,1,,
+NEON.D08.LENO.DP1.00033,DB,DB,1000,31.85388,-88.16122,2017,2024,keep,1,,
+NEON.D08.TALL.DP1.00033,EN,EN,1000,32.95047,-87.393259,2017,2024,keep,1,,
+NEON.D08.TOMB.DP1.20002,DB,DB,2000,31.853431,-88.158872,2020,2023,remove,,,insufficient number of years
+NEON.D08.TOMB.DP1.20002,GR,GR,2000,31.853431,-88.158872,2021,2024,remove,,,insufficient number of years
+NEON.D09.DCFS.DP1.00033,GR,GR,1000,47.161647,-99.106556,2018,2023,keep,1,,
+NEON.D09.NOGP.DP1.00033,GR,GR,1000,46.76972,-100.91535,2018,2024,keep,1,,
+NEON.D09.PRLA.DP1.20002,GR,GR,1000,47.15909,-99.11388,2018,2024,keep,1,yes,grasses in the background
+NEON.D09.PRLA.DP1.20002,WL,WL,1000,47.15909,-99.11388,2018,2024,keep,2,yes,grasses on the shore
+NEON.D09.PRPO.DP1.20002,WL,WL,1000,47.12999,-99.250551,2018,2024,keep,1,yes,grasses by the water - should this be relabeled as GR?
+NEON.D09.WOOD.DP1.00033,GR,GR,1000,47.1282,-99.241334,2017,2024,keep,1,,
+NEON.D10.ARIK.DP1.20002,GR,GR,1000,39.758246,-102.447103,2017,2024,keep,1,yes,"close to cper sites, lightly grazed"
+NEON.D10.CPER.DP1.00033,GR,GR,1000,40.81553,-104.7456,2017,2024,keep,1,,
+NEON.D10.RMNP.DP1.00033,EN,EN,1000,40.275903,-105.545955,2017,2024,keep,1,,
+NEON.D10.STER.DP1.00033,AG,AG,1000,40.461894,-103.02929,2017,2024,keep,1,yes,multiple growing seasons visible
+NEON.D11.BLUE.DP1.20002,DB,DB,1000,34.444218,-96.624201,2021,2024,remove,,,insufficient number of years
+NEON.D11.BLUE.DP1.20002,GR,GR,1000,34.444218,-96.624201,2021,2024,remove,,,insufficient number of years
+NEON.D11.CLBJ.DP1.00033,DB,DB,2000,33.40123,-97.57,2018,2023,keep,1,,
+NEON.D11.OAES.DP1.00033,GR,GR,1000,35.41059,-99.05879,2017,2024,keep,1,,
+NEON.D12.BLDE.DP1.20002,GR,GR,1000,44.95011,-110.58715,2019,2024,keep,1,yes,riverside grass
+NEON.D12.YELL.DP1.00033,EN,EN,1000,44.95348,-110.53914,2019,2024,keep,1,,
+NEON.D13.MOAB.DP1.00033,GR,GR,1000,38.24833,-109.38827,2017,2024,keep,1,yes,high noise
+NEON.D13.NIWO.DP1.00033,TN,TN,1000,40.05425,-105.58237,2017,2024,keep,1,yes,mix of tundra plants
+NEON.D13.NIWO.DP1.00033,TN,TN,1001,40.05425,-105.58237,2017,2024,keep,2,,
+NEON.D13.NIWO.DP1.00033,TN,TN,1002,40.05425,-105.58237,2017,2024,keep,2,,
+NEON.D14.JORN.DP1.00033,GR,GR,1000,32.59068,-106.84254,2017,2024,keep,1,,
+NEON.D14.SRER.DP1.00033,SH,SH,1000,31.91068,-110.83549,2017,2024,keep,1,yes,multiple growing seasons visible
+NEON.D15.ONAQ.DP1.00033,GR,GR,1000,40.177599,-112.452452,2017,2024,keep,2,,
+NEON.D15.ONAQ.DP1.00033,SH,SH,1000,40.177599,-112.452452,2017,2024,keep,1,,shrub mixed with grass
+NEON.D15.ONAQ.DP1.00033,SH,SH,1001,40.177599,-112.452452,2017,2024,keep,3,,
+NEON.D16.ABBY.DP1.00033,EN,EN,1000,45.76243,-122.33033,2017,2024,keep,1,,
+NEON.D16.WREF.DP1.00033,EN,EN,1000,45.82049,-121.95191,2018,2024,keep,1,,
+NEON.D17.SJER.DP1.00033,EN,EN,2000,37.10878,-119.73228,2019,2024,keep,1,yes,high noise
+NEON.D17.SOAP.DP1.00033,EN,EN,1000,37.03337,-119.26219,2018,2024,keep,1,yes,small ROI
+NEON.D17.TEAK.DP1.00033,EN,EN,1000,37.00583,-119.00602,2020,2024,keep,1,,
+NEON.D18.BARR.DP1.00033,TN,TN,1000,71.28241,-156.61936,2021,2024,keep,1,yes,some gaps in timeseries during winter
+NEON.D18.OKSR.DP1.20002,TN,TN,1000,68.669753,-149.143018,2024,2024,remove,,,
+NEON.D18.TOOK.DP1.20002,GR,GR,1000,68.629562,-149.610509,2019,2021,remove,,,
+NEON.D18.TOOL.DP1.00033,TN,TN,1000,68.66109,-149.37047,2017,2023,keep,1,yes,some gaps in timeseries during winter
+NEON.D19.BONA.DP1.00033,EN,EN,1000,65.15401,-147.50258,2019,2024,keep,1,yes,"Alaska, some gaps in timeseries during winter"
+NEON.D19.CARI.DP1.20002,SH,SH,1000,65.15306,-147.50246,2018,2024,keep,1,yes,"Alaska, shrub growing by river, some gaps in data between growing seasons"
+NEON.D19.DEJU.DP1.00033,EN,EN,1000,63.88112,-145.75136,2017,2024,keep,1,yes,"Alaska, some gaps in timeseries during winter"
+NEON.D19.HEAL.DP1.00033,TN,TN,1000,63.87569,-149.21334,2017,2024,keep,1,yes,"Alaska, some gaps in timeseries during winter"
+NEON.D20.PUUM.DP1.00033,EB,EB,1000,19.55309,-155.31731,2019,2024,remove,,,Hawaii
+nevcansnk3a,EN,EN,1000,39.0099,-114.3095,2017,2024,keep,1,yes,nevcans sites close together
+nevcanspg1a,SH,SH,1000,38.9253,-114.4082,2019,2024,remove,,,insufficient number of complete growing seasons
+nevcanspg2a,EN,EN,1000,38.8921,-114.3521,2019,2024,keep,1,yes,nevcans sites close together
+nevcanspg4a,EN,EN,1000,38.9061,-114.3089,2017,2024,keep,1,yes,nevcans sites close together
+ninemileprairie,DB,DB,2000,40.86801886,-96.82208066,2018,2024,keep,2,,
+ninemileprairie,GR,GR,2000,40.86801886,-96.82208066,2018,2024,keep,1,,
+nist,DB,DB,1000,39.139,-77.2125,2018,2024,keep,1,,
+nist,GR,GR,1000,39.139,-77.2125,2018,2024,keep,2,,
+niwot3,EN,EN,1000,40.03286358,-105.5469702,2016,2024,keep,2,yes,niwot sites close together
+niwot5,EN,EN,1000,40.03286358,-105.5469702,2017,2024,keep,1,yes,"niwot sites close together, GCC slightly higher than niwot3"
+niwot5,EN,EN,1001,40.03286358,-105.5469702,2017,2024,remove,,,small ROI
+niwot5,EN,EN,1002,40.03286358,-105.5469702,2017,2024,remove,,,small ROI
+niwot5,EN,EN,1003,40.03286358,-105.5469702,2017,2024,remove,,,small ROI
+niwot5,EN,EN,1004,40.03286358,-105.5469702,2017,2024,remove,,,small ROI
+niwot5,EN,EN,1005,40.03286358,-105.5469702,2017,2024,remove,,,small ROI
+niwot5,EN,EN,1006,40.03286358,-105.5469702,2017,2024,remove,,,small ROI
+niwot5,EN,EN,1007,40.03286358,-105.5469702,2017,2024,remove,,,small ROI
+niwot5,EN,EN,1008,40.03286358,-105.5469702,2017,2024,remove,,,small ROI
+northattleboroma,DB,DB,1000,41.98369,-71.31056,2016,2020,keep,1,,
+northinletsaltmarsh,WL,WL,1000,33.3455,-79.1957,2018,2024,keep,1,yes,wetland plants - will probably be eliminated from final analysis
+oakville,GR,GR,1000,47.899334,-97.316139,2016,2024,keep,1,,
+oregonMP,EN,EN,1000,44.4523,-121.5574,2016,2020,keep,1,yes,oregon sites close together
+oregonYP,EN,EN,2000,44.32384,-121.605993,2016,2024,keep,1,yes,oregon sites close together
+oregonYPbud,EN,EN,1000,44.3238,-121.606,2019,2024,remove,,,close-up of needles
+othshardwood,UN,UN,1000,44.934805,-68.6655,2019,2024,keep,1,yes,understory of mixed deciduous stand
+othssoftwood,UN,UN,1000,44.934527,-68.664888,2019,2024,keep,1,yes,understory
+pace,DB,DB,1000,37.9229,-78.2739,2018,2023,keep,1,,missing most of one year - may be screened out during analysis
+pace,EN,EN,1000,37.9229,-78.2739,2018,2023,keep,2,,missing most of one year - may be screened out during analysis
+portal,SH,SH,1000,31.9385,-109.0823,2017,2024,keep,1,yes,missing significant segments of data - may be screened out during analysis
+proctor,DB,DB,1000,44.525,-72.866,2016,2024,keep,1,,
+readingma,DB,DB,1000,42.5304,-71.1272,2016,2019,remove,,,insufficient number of years
+robinson,DB,DB,1000,37.4671,-83.1576,2018,2023,keep,1,yes,robinson sites close together
+robinson2,DB,DB,1000,37.4671,-83.1576,2017,2023,keep,2,yes,robinson sites close together
+rosemountcons,AG,AG,1000,44.6946,-93.0578,2017,2020,remove,,,insufficient number of years
+rosemountcons,AG,AG,2000,44.6946,-93.0578,2021,2024,remove,,,insufficient number of years
+rosemountconv,AG,AG,1000,44.691,-93.0576,2017,2020,remove,,,insufficient number of years
+rosemountconv,AG,AG,2000,44.691,-93.0576,2021,2024,remove,,,insufficient number of years
+rosemountnprs,AG,GR,1000,44.6781,-93.0723,2016,2024,keep,1,yes,native prairie restoration site - designate as primarily grass
+rushranch,WL,WL,1000,38.2006,-122.0264,2017,2022,remove,,,insufficient number of growing seasons
+russellsage,DB,DB,1000,32.456961,-91.974322,2016,2024,keep,1,,
+sagehen,EN,EN,1000,39.4315,-120.2398,2018,2024,keep,1,,
+sagehen2,GR,GR,1000,39.4307,-120.2407,2018,2024,keep,2,,subcanopy grass
+sagehen3,GR,GR,1000,39.4311,-120.2405,2019,2024,keep,2,,subcanopy grass
+sagehen3,GR,GR,1001,39.4311,-120.2405,2019,2024,remove,,,"subcanopy grass, small ROI"
+sanford,DB,DB,1000,42.726777,-84.464482,2016,2024,keep,1,,
+santaluciapreserve1,EN,EN,1000,36.5265,-121.8682,2022,2023,remove,,,insufficient number of years
+segaarboretum10,GR,GR,1000,35.16209,-111.73151,2019,2022,remove,,,controlled experiment
+segaarboretum2,GR,GR,1000,35.16209,-111.73151,2019,2022,remove,,,insufficient number of years
+segaarboretum4,GR,GR,1000,35.16214,-111.73153,2019,2022,remove,,,controlled experiment
+segaarboretum9,GR,GR,1000,35.16222,-111.73158,2019,2022,remove,,,controlled experiment
+segaarboretumforest,EN,EN,1000,35.1613,-111.7359,2019,2024,keep,1,yes,segaarboretum sites close together
+segaarboretumforest,GR,GR,1000,35.1613,-111.7359,2019,2024,keep,2,yes,segaarboretum sites close together
+segaarboretummeadow,EN,EN,2000,35.1621,-111.7316,2019,2024,keep,2,yes,segaarboretum sites close together
+segaarboretummeadow,GR,GR,2000,35.1621,-111.7316,2019,2024,keep,1,yes,segaarboretum sites close together
+segablackpoint,GR,GR,2000,35.6814,-111.4754,2018,2024,keep,1,,
+segabluechute,EN,EN,1000,35.5876,-111.9716,2018,2023,keep,2,,missing data - may be screened out during analysis
+segabluechute,GR,GR,1000,35.5876,-111.9716,2018,2023,keep,1,,missing data - may be screened out during analysis
+segabluechute1,GR,GR,1000,35.58759,-111.97115,2019,2023,remove,,,controlled experiment
+segabluechute2,GR,GR,1000,35.58759,-111.97115,2019,2023,remove,,,single plot
+segabluechute4,GR,GR,1000,35.58759,-111.9716,2019,2023,remove,,,controlled experiment
+segabluechute6,GR,GR,1000,35.58759,-111.97115,2019,2023,remove,,,controlled experiment
+segabluechute7,GR,GR,1000,35.58759,-111.97115,2019,2023,remove,,,single plot
+segabluechute8,GR,GR,1000,35.58759,-111.97115,2019,2023,remove,,,controlled experiment
+segabradshaw,EN,EN,2000,34.9109,-111.9285,2021,2024,remove,,,insufficient number of years
+segahartprairie,DB,DB,1000,35.3536,-111.7324,2020,2024,keep,2,,
+segahartprairie,GR,GR,1000,35.3536,-111.7324,2020,2024,keep,1,,
+segalcr,GR,GR,1000,35.7231,-111.321,2019,2024,keep,1,,
+segalcr2,SH,SH,1000,35.7069,-111.36,2020,2024,keep,1,,
+segalittlemountain,EN,EN,1000,36.5865,-112.3634,2020,2022,remove,,,insufficient number of years
+segalittlemountain,GR,GR,1000,36.5865,-112.3634,2020,2022,remove,,,insufficient number of years
+segasoapcreek,SH,SH,1000,36.751,-111.716,2020,2024,remove,,,insufficient number of growing seasons
+segawhitepockets,EN,EN,1000,36.6081,-112.4082,2019,2024,keep,2,,
+segawhitepockets,GR,GR,1000,36.6081,-112.4082,2017,2024,keep,1,,
+sevilletagrass,GR,GR,1000,34.360444,-106.700186,2016,2024,keep,1,yes,sevilleta sites close together
+sevilletanewgrass,GR,GR,1000,34.358,-106.6799,2019,2024,keep,2,yes,sevilleta sites close together
+sevilletashrub,GR,GR,1000,34.334956,-106.744469,2016,2024,keep,2,,
+sevilletashrub,SH,SH,1000,34.334956,-106.744469,2016,2024,keep,1,yes,small ROI
+sevMRME10L,GR,GR,1000,34.3438,-106.7269,2019,2024,remove,,,controlled experiment
+sevMRME11C,GR,GR,1000,34.3438,-106.7268,2019,2024,keep,1,yes,control plot from an experiment
+sevMRME1S,GR,GR,2000,34.3442,-106.7272,2020,2024,remove,,,controlled experiment
+shalehillsczo,DB,DB,2000,40.6658,-77.9041,2016,2024,keep,1,,
+shenandoah,DB,DB,1000,38.6167,-78.35,2016,2024,keep,1,,
+silverton,AG,AG,1000,44.9986,-122.6948,2016,2021,keep,1,yes,multiple growing seasons visible
+slatefloodplain,EN,EN,1000,38.9094,-107.0282,2021,2023,remove,,,insufficient number of years
+slatefloodplain,WL,WL,1000,38.9094,-107.0282,2021,2024,remove,,,insufficient number of years
+southerngreatplains,AG,AG,1000,36.6058,-97.4888,2016,2024,keep,1,yes,multiple growing seasons visible
+spruceA0EMI,EN,EN,1000,47.5049,-93.4541,2016,2024,keep,1,yes,EM instruments
+spruceA0EMI,SH,SH,1000,47.5049,-93.4541,2016,2024,keep,2,yes,EM instruments
+spruceA0EMT,SH,SH,1000,47.5049,-93.4541,2016,2024,keep,2,yes,EM transect
+spruceA0P07,EN,EN,1000,47.50493,-93.45314,2016,2024,keep,2,yes,evergreens from top
+spruceA0P07,SH,SH,1000,47.50493,-93.45314,2016,2024,keep,2,yes,shrubs from top
+spruceA0P07SH,SH,SH,1000,47.50493,-93.45314,2018,2024,keep,3,yes,close-up of shrubs
+spruceA0P21SH,SH,SH,1000,47.50625,-93.45275,2018,2024,keep,3,yes,close-up of shrubs
+srg,GR,GR,1000,31.7894,-110.8276,2020,2024,keep,1,,missing data - may be screened out during analysis
+srm,GR,GR,1000,31.8214,-110.8661,2019,2024,keep,2,,
+srm,SH,SH,1000,31.8214,-110.8661,2019,2024,keep,1,,
+stjones,GR,GR,1000,39.088222,-75.43725,2016,2024,keep,1,,
+sweetbriar,DB,DB,1000,37.57341,-79.08482,2016,2023,keep,2,yes,DB and EN both significant in scene
+sweetbriar,EN,EN,1000,37.57341,-79.08482,2016,2021,keep,1,yes,DB and EN both significant in scene
+sweetbriarclearcut,EN,EN,1000,37.5753,-79.0872,2019,2023,keep,2,yes,EN forest recovering from clearcut
+sweetbriargrass,AG,GR,1000,37.5605,-79.0884,2016,2021,keep,1,yes,designate as grass
+sweetbriargrass,DB,DB,1000,37.5605,-79.0884,2016,2021,keep,2,,
+sylvania,DB,DB,1000,46.242,-89.348,2016,2024,keep,1,,
+sylvania,EN,EN,1000,46.242,-89.348,2016,2024,keep,2,,
+tfforest,DB,DB,1000,43.1086,-70.9505,2017,2024,keep,2,,single tree
+tfforest,DB,DB,1001,43.1086,-70.9505,2017,2024,keep,2,,single tree
+tfforest,DB,DB,1002,43.1086,-70.9505,2017,2024,keep,2,,two trees
+tfforest,EN,EN,1000,43.1086,-70.9505,2017,2024,keep,1,,
+tidmarshplymouth,AG,AG,2000,41.9157,-70.5754,2019,2024,keep,1,yes,cranberry bog
+tonzi,DB,DB,1000,38.43091667,-120.9658861,2016,2024,keep,1,,
+tonzi,GR,GR,1000,38.43091667,-120.9658861,2016,2024,keep,2,,
+townsenddemeadow,GR,GR,1000,39.3917,-75.6281,2020,2024,remove,,,insufficient number of growing seasons
+tsubiology,DB,DB,2000,36.1671,-86.8295,2020,2024,keep,1,yes,tsubiology sites close together
+tsubiology2,DB,DB,1000,36.1171,-86.8295,2020,2024,keep,1,yes,tsubiology sites close together
+tsubiology2,GR,GR,1000,36.1171,-86.8295,2020,2024,remove,,,insufficient number of growing seasons
+tuckerprairie,GR,GR,1000,38.9491,-91.9952,2019,2024,keep,1,,
+tworfaa,AG,AG,1000,31.4777,-96.8882,2018,2022,remove,,,insufficient number of years
+tworfpr,AG,AG,1000,31.4802,-96.8826,2018,2023,remove,,,insufficient number of growing seasons
+tworfta,AG,AG,1000,31.4693,-96.8864,2018,2023,keep,1,yes,crops grown under traditional practices - may be irrigated
+twosfpr,AG,AG,1000,30.6176,-97.2938,2019,2023,remove,,,insufficient number of growing seasons
+ucnrsanzaborrego,SH,SH,1000,33.2401,-116.3886,2019,2024,remove,,,too many gaps in data
+ufona,SH,SH,1000,27.3836,-81.950856,2017,2024,keep,1,,
+uiefmaize2,AG,AG,1000,40.0628,-88.1961,2019,2024,keep,1,yes,"uief sites close together, agricultural sideview of maize"
+uiefmiscanthus2,AG,AG,1000,40.0628,-88.1984,2019,2024,keep,2,yes,"uief sites close together, miscanthus agroecosystem sideview"
+uiefprairie2,AG,AG,1000,40.0637,-88.1973,2019,2024,keep,1,yes,"restored prairie, uief sites close together"
+uiefsorghum,AG,AG,1000,40.0065,-88.2032,2019,2024,remove,,,insufficient number of growing seasons
+uiefswitchgrass2,AG,AG,1000,40.0637,-88.1973,2019,2024,keep,2,yes,"uief sites close together, sideview AG"
+umichbiological,DB,DB,2000,45.55984,-84.71382,2016,2023,keep,1,yes,umichbiological sites close together
+umichbiological,EN,EN,2000,45.55984,-84.71382,2016,2023,keep,2,yes,umichbiological sites close together
+umichbiological2,DB,DB,2000,45.5625,-84.6976,2016,2022,keep,1,yes,umichbiological sites close together
+unca,DB,DB,1000,35.5951,-82.5515,2017,2024,keep,1,,
+usgseros,DB,DB,2000,43.7343,-96.6234,2019,2024,keep,2,,
+usgseros,GR,GR,2000,43.7343,-96.6234,2019,2024,keep,1,,
+usmpj,EN,EN,1000,34.43845,-106.2543606,2016,2024,keep,1,,
+uwmfieldsta,DB,DB,1000,43.38709,-88.0229,2016,2024,keep,1,,
+uwmfieldsta,GR,GR,1000,43.38709,-88.0229,2016,2024,keep,2,,
+vaira,GR,GR,1000,38.41328056,-120.9506361,2016,2024,keep,1,,
+vallesburnedconifer,UN,UN,1000,35.8884,-106.5321,2021,2024,remove,,,insufficient number of years
+vallesmixedconifer,EN,EN,1000,35.9192,-106.6142,2019,2024,keep,1,yes,missing data - may be screened out during analysis
+vallesponderosapine,EN,EN,1000,35.864,-106.5964,2022,2024,remove,,,insufficient number of years
+waahila,GR,GR,1000,21.3017,-157.8152,2017,2024,remove,,,Hawaii
+warrenwilson,EN,EN,2000,35.6069,-82.4421,2018,2024,keep,1,,
+willowcreek,DB,DB,1000,45.805986,-90.07912,2016,2024,keep,1,,
+windriverunderstory,EN,EN,1000,45.8212833,-121.9520833,2016,2024,keep,1,yes,EN understory
+wolfesneckfarm,AG,AG,1000,43.8305,-70.0715,2017,2022,keep,1,yes,missing data - may be screened out during analysis
+worcester,DB,DB,1000,42.2697,-71.8428,2016,2024,keep,1,,
