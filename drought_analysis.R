@@ -130,7 +130,7 @@ site_numbers <- growing_seasons_phen_usdm_filtered %>% count(Primary_Veg_Type,Ye
 ###################################################################
 
 # Temporary data for all plots
-temp_data <- mutate(growing_seasons_phen_usdm_filtered,GSL_25 = EOS_25-SOS_25, SOS_25_DOY = yday(SOS_25))
+temp_data <- mutate(growing_seasons_phen_usdm_filtered,GSL_25 = as.numeric(EOS_25-SOS_25), SOS_25_DOY = yday(SOS_25))
 
 # Peak GCC vs. Cumulative DM
 facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM,y=Peak_GCC)) +
@@ -146,6 +146,14 @@ facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg
   geom_smooth(method = lm) +
   facet_wrap(~Primary_Veg_Type,ncol=2) +
   ggtitle("Peak GCC vs. Weighted Average DM (including D0)")
+facet_peak
+
+# GSL vs. Weighted Average DM
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM_with_D0,y=GSL_25)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("GSL vs. Weighted Average DM (including D0)")
 facet_peak
 
 # Peak GCC vs. Mean VPD Anomaly
@@ -172,11 +180,19 @@ facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg
   ggtitle("Peak GCC vs. Anomaly in Site-Year Cumulative VPD")
 facet_peak
 
+# GSL vs. Mean VPD Anomaly
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Mean_VPD_Anomaly,y=GSL_25)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("GSL vs. Mean VPD Anomaly")
+facet_peak
+
 #########################
 # Linear Model Summaries
 #########################
 
-# Cumulative DM, including D0
+# Peak GCC vs. Cumulative DM, including D0
 
 # AG
 summary(lm(Peak_GCC ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type=="AG")))
@@ -189,7 +205,20 @@ summary(lm(Peak_GCC ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type=
 # SH
 summary(lm(Peak_GCC ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type=="SH")))
 
-# Mean VPD Anomaly
+# GSL vs. Cumulative DM, including D0
+
+# AG
+summary(lm(GSL_25 ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type=="AG")))
+# DB
+summary(lm(GSL_25 ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type=="DB")))
+# EN
+summary(lm(GSL_25 ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type=="EN")))
+# GR
+summary(lm(GSL_25 ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type=="GR")))
+# SH
+summary(lm(GSL_25 ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type=="SH")))
+
+# Peak GCC vs. Mean VPD Anomaly
 
 # AG
 summary(lm(Peak_GCC ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="AG")))
@@ -202,7 +231,7 @@ summary(lm(Peak_GCC ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="GR"
 # SH
 summary(lm(Peak_GCC ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="SH")))
 
-# Cumulative VPD Anomaly
+# Peak GCC vs. Cumulative VPD Anomaly
 
 # AG
 summary(lm(Peak_GCC ~ Cumulative_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="AG")))
@@ -214,6 +243,19 @@ summary(lm(Peak_GCC ~ Cumulative_VPD_Anomaly, filter(temp_data, Primary_Veg_Type
 summary(lm(Peak_GCC ~ Cumulative_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="GR")))
 # SH
 summary(lm(Peak_GCC ~ Cumulative_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="SH")))
+
+# GSL vs. Mean VPD Anomaly
+
+# AG
+summary(lm(GSL_25 ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="AG")))
+# DB
+summary(lm(GSL_25 ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="DB")))
+# EN
+summary(lm(GSL_25 ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="EN")))
+# GR
+summary(lm(GSL_25 ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="GR")))
+# SH
+summary(lm(GSL_25 ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="SH")))
 
 ###################################
 # Other plots (testing with Darren)
