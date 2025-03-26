@@ -13,6 +13,7 @@ This project explores the relationship between PhenoCam GCC metrics and drought.
 | Level I Ecoregions of North America | 15 broad ecological regions in North America, which group areas of similar ecosystem type and natural resource availability. Data are available in vector shapefile format. | https://www.epa.gov/eco-research/ecoregions-north-america | [Direct download link](https://dmap-prod-oms-edc.s3.us-east-1.amazonaws.com/ORD/Ecoregions/cec_na/na_cec_eco_l1.zip) |
 | U.S. Counties | 2023 U.S. county boundaries, provided in shapefile format by the U.S. Census Bureau. | https://www.census.gov/geographies/mapping-files.html | [Direct download link](https://www2.census.gov/geo/tiger/TIGER2023/COUNTY/tl_2023_us_county.zip) |
 | Vapor Pressure Deficit (VPD) | Daily VPD values at phenocam locations, provided by the National Drought Mitigation Center (NDMC) and derived from 5 KM raster data. | https://drought.unl.edu/ | N/A |
+| Standardized Precipitation and Evapotranspiration Index (SPEI) | Weekly SPEI values at phenocam locations, provided by the National Drought Mitigation Center and derived from 5 KM raster data. | https://drought.unl.edu/ | N/A |
 
 ## Getting started
 
@@ -32,3 +33,26 @@ U.S. county shapefile is too large for github and needs to be downloaded locally
 **extract_usdm_at_phen_locations.R** extracts USDM values for a given year (given by year_list) for all PhenoCam locations, and saves these values in outputs/phen_usdm_YEAR.RData. This code should be run for each year of interest.
 
 **load_phen_usdm_data.R** reads downloaded phenocam GCC into a dataframe, combines yearly USDM values into a single dataframe, and adds level I ecoregion information to both of these dataframes. Outputs are saved as outputs/phen_gcc.RData and outputs/phen_usdm.RData.
+
+## Calculate relevant metrics
+
+### Calculate phenological metrics
+**calculate_phenometrics.R** calculates start of season (SOS), timing and value of peak GCC, and end of season (EOS) for each valid growing season for each site and year of PhenoCam data. SOS and EOS are calculated at multiple thresholds (15%, 25%, and 50% of the peak amplitude), and it is possible for sites to have no valid growing seasons or more than 1 valid growing season in a given year. Outputs are saved as outputs/growing_seasons_phen.RData (all years of available PhenoCam data) and outputs/growing_seasons_phen_2016_to_2024.RData (data collected between 2016 and 2024).
+
+### Calculate drought metrics
+**calculate_vpd_anomaly.R** calculates the mean and cumulative VPD values for each site-year of PhenoCam data, and calculates the VPD anomalies per site-year as the difference between the mean for that year and the mean across all years for that site. Outputs are saved as outputs/vpd_statistics.RData.
+
+**calculate_spei_anomaly.R** calculates the mean SPEI values for each site-year of PhenoCam data, and saves them in outputs/spei_statistics.RData.
+
+## Analysis
+
+### Manual Filtering and Site Selection
+Some steps of the site selection are not easily automated and need to be performed manually. These include:
+- In cases where a single PhenoCam had multiple valid ROIs (e.g. covering different vegetation types or different portions of the image), only one ROI was manually selected for analysis, with priority given to ROIs covering larger spatial or temporal extents.
+- In cases where multiple cameras were positioned very close together (define how close?), only one ROI from the entire group of cameras was used for analysis.
+- Landscape (XX) and some agricultural (AG) ROIs were re-labeled to match the primary vegetation type captured in the ROI.
+
+To perform manual filtering, **list_phenocam_rois.R** was used to generate a CSV of all PhenoCam ROIs included in the growing season metrics calculation. Each ROI in the CSV was then manually annotated (based on visual inspection of ROIs) with a designation of "keep" or "remove", and a "rank" (1 for primary ROI, 2 or 3 for secondary or tertiary ROIs from the same camera or location). The annotated CSV was uploaded as data/unique_phenocam_rois_annotated_03-09-2025.csv and used in the analysis to consider only primary ROIs.
+
+### Perform statistical analysis
+**drought_analysis.R** calculates weighted average drought metric by site-year and performs linear regression between phenological metrics and drought metrics from USDM, VPD, and SPEI.
