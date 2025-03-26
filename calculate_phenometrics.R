@@ -1,5 +1,10 @@
 # Calculate phenometrics
 
+# Note 3/19/25: Added code under count number of site-years section to determine
+# "primary" growing season in case of multiple growing seasons per year.
+# Have not yet decided whether to calculate average phenometrics from "primary"
+# growing season or from earliest start and latest end.
+
 # Note 10/29/24: Code to eliminate smaller peaks with larger peaks within 30 days
 # throws a warning for peaks at very beginning and end of time series (but should
 # still return good results - these peaks will be eliminated at the check for 35% variation)
@@ -215,9 +220,12 @@ ggplot() +
   geom_vline(xintercept = filter(growing_seasons_phen, Phenocam=="ibp" & Veg_Type=="XX")$SOS_50, color="green") +
   geom_vline(xintercept = filter(growing_seasons_phen, Phenocam=="ibp"& Veg_Type=="XX")$EOS_50, color="red")
 
-##########################################################
-# Identify site-years with no or multiple growing seasons
-##########################################################
+############################################################################
+# Count number of growing seasons per site-year, including 0 or more than 1
+############################################################################
+
+# Add a new field (Primary_Growing_Season) to growing_seasons_phen
+growing_seasons_phen <- cbind(growing_seasons_phen, "Primary_Growing_Season" = "no")
 
 growing_seasons_phen_number <- data.frame(matrix(ncol = 6, nrow = 0))
 x <- c("Phenocam","Veg_Type","ROI","Year","Number_Growing_Seasons","Peak_GCC")
@@ -243,12 +251,23 @@ for (i in 1:nrow(unique_phenocams)){
                             Number_Growing_Seasons = number_growing_seasons,
                             Peak_GCC = peak_gcc)
       growing_seasons_phen_number <- rbind(growing_seasons_phen_number,new_row)
+      
+      # Denote primary growing season in growing_seasons_phen
+      # Primary growing season is currently determined by the growing season with the greatest peak GCC
+      if(number_growing_seasons>0){
+        temp_df <- filter(growing_seasons_phen, Phenocam==phenocam & Veg_Type==veg_type & ROI==roi & Year==year)
+        peak_gcc_val <- max(temp_df$Peak_GCC, na.rm=TRUE)
+        growing_seasons_phen[growing_seasons_phen$Phenocam==phenocam & growing_seasons_phen$Veg_Type==veg_type & growing_seasons_phen$ROI==roi & growing_seasons_phen$Year==year & growing_seasons_phen$Peak_GCC==peak_gcc_val,]$Primary_Growing_Season <- "yes"
+      }
+      
+      #growing_seasons_phen <- growing_seasons_phen %>%
+      #  mutate(Primary_Growing_Season = case_when(Phenocam==phenocam & Veg_Type==veg_type & ROI==roi & Year==year & Peak_GCC==peak_gcc ~ "yes"))
     }
   }
 }
 
 # Optional - remove variables
-rm(new_row, phen_subset,unique_phenocams,i,number_growing_seasons,peak_gcc,phenocam,roi,veg_type,x,year)
+rm(new_row, phen_subset,unique_phenocams,i,number_growing_seasons,peak_gcc,peak_gcc_val,phenocam,roi,temp_df,veg_type,x,year)
 
 ###############################################################
 # Identify typical growing season values for each phenocam ROI
@@ -308,7 +327,8 @@ for (i in 1:nrow(unique_phenocams)){
                             Peak_flag = filter(phen_subset, Year==year & Peak==peak)$Peak_flag,
                             EOS_50_flag = filter(phen_subset, Year==year & EOS_50==eos_50)$EOS_50_flag,
                             EOS_25_flag = filter(phen_subset, Year==year & EOS_25==eos_25)$EOS_25_flag,
-                            EOS_15_flag = filter(phen_subset, Year==year & EOS_15==eos_15)$EOS_15_flag)
+                            EOS_15_flag = filter(phen_subset, Year==year & EOS_15==eos_15)$EOS_15_flag,
+                            Primary_Growing_Season = "yes")
       phen_subset <- filter(phen_subset, Year != year)
       phen_subset <- rbind(phen_subset, new_row)
       rm(new_row)
@@ -413,7 +433,8 @@ for (i in 1:nrow(unique_phenocams)){
                             Peak_flag = filter(phen_subset, Year==year & Peak==peak)$Peak_flag,
                             EOS_50_flag = filter(phen_subset, Year==year & EOS_50==eos_50)$EOS_50_flag,
                             EOS_25_flag = filter(phen_subset, Year==year & EOS_25==eos_25)$EOS_25_flag,
-                            EOS_15_flag = filter(phen_subset, Year==year & EOS_15==eos_15)$EOS_15_flag)
+                            EOS_15_flag = filter(phen_subset, Year==year & EOS_15==eos_15)$EOS_15_flag,
+                            Primary_Growing_Season = "yes")
       phen_subset <- filter(phen_subset, Year != year)
       phen_subset <- rbind(phen_subset, new_row)
       rm(new_row)

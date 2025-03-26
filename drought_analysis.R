@@ -16,6 +16,7 @@ load("outputs/growing_seasons_phen_2016_to_2024.RData")
 #load("outputs/phen_usdm.RData")
 load("outputs/drought_statistics.RData")
 load("outputs/vpd_statistics.RData")
+load("outputs/spei_statistics.RData")
 
 ###################################
 # Filter data according to ROI list
@@ -62,11 +63,12 @@ rm(i, phenocam, roi, veg_type)
 
 drought_statistics_filtered <- filter(drought_statistics, Phenocam %in% primary_rois$Phenocam)
 vpd_statistics_filtered <- filter(vpd_statistics, Phenocam %in% primary_rois$Phenocam)
+spei_statistics_filtered <- filter(spei_statistics, Phenocam %in% primary_rois$Phenocam)
 phen_usdm_modified_filtered <- filter(phen_usdm_modified, Phenocam %in% primary_rois$Phenocam)
 
 # Remove unfiltered data
 rm(drought_statistics, growing_seasons_phen, growing_seasons_phen_ave,
-   growing_seasons_phen_number, phen_usdm_modified, vpd_statistics)
+   growing_seasons_phen_number, phen_usdm_modified, spei_statistics, vpd_statistics)
 
 # Add Primary_Veg_Type field to filtered dataframes
 # Primary_Veg_Type is the same as Veg_Type for most ROIs, but assigns a veg type to XX ROIs and a few other ROIs
@@ -119,6 +121,12 @@ rm(i,phenocam,year,temp_phen_usdm,cumulative_dm,cumulative_dm_with_d0,drought_we
 
 growing_seasons_phen_usdm_filtered <- left_join(growing_seasons_phen_usdm_filtered, vpd_statistics_filtered, by=join_by(Phenocam,Year))
 
+######################
+# Add SPEI statistics
+######################
+
+growing_seasons_phen_usdm_filtered <- left_join(growing_seasons_phen_usdm_filtered, spei_statistics_filtered, by=join_by(Phenocam,Year))
+
 ######################################################
 # Calculate site numbers by primary veg type and year
 ######################################################
@@ -130,15 +138,13 @@ site_numbers <- growing_seasons_phen_usdm_filtered %>% count(Primary_Veg_Type,Ye
 ###################################################################
 
 # Temporary data for all plots
-temp_data <- mutate(growing_seasons_phen_usdm_filtered,GSL_25 = as.numeric(EOS_25-SOS_25), SOS_25_DOY = yday(SOS_25))
+temp_data <- growing_seasons_phen_usdm_filtered %>%
+  filter(Primary_Growing_Season=="yes") %>%
+  mutate(GSL_25 = as.numeric(EOS_25-SOS_25), SOS_25_DOY = yday(SOS_25))
 
-# Peak GCC vs. Cumulative DM
-facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM,y=Peak_GCC)) +
-  geom_point() +
-  geom_smooth(method = lm) +
-  facet_wrap(~Primary_Veg_Type,ncol=2) +
-  ggtitle("Peak GCC vs. Cumulative DM (not including D0)")
-facet_peak
+######################
+# Weighted Average DM
+######################
 
 # Peak GCC vs. Weighted Average DM
 facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM_with_D0,y=Peak_GCC)) +
@@ -156,6 +162,10 @@ facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg
   ggtitle("GSL vs. Weighted Average DM (including D0)")
 facet_peak
 
+##############
+# VPD Anomaly
+##############
+
 # Peak GCC vs. Mean VPD Anomaly
 facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Mean_VPD_Anomaly,y=Peak_GCC)) +
   geom_point() +
@@ -164,13 +174,13 @@ facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg
   ggtitle("Peak GCC vs. Mean VPD Anomaly")
 facet_peak
 
-# Peak GCC vs. Anomaly in Maximum VPD
-facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Max_VPD_Anomaly,y=Peak_GCC)) +
-  geom_point() +
-  geom_smooth(method = lm) +
-  facet_wrap(~Primary_Veg_Type,ncol=2) +
-  ggtitle("Peak GCC vs. Anomaly in Site-Year Maximum VPD")
-facet_peak
+# # Peak GCC vs. Anomaly in Maximum VPD
+# facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Max_VPD_Anomaly,y=Peak_GCC)) +
+#   geom_point() +
+#   geom_smooth(method = lm) +
+#   facet_wrap(~Primary_Veg_Type,ncol=2) +
+#   ggtitle("Peak GCC vs. Anomaly in Site-Year Maximum VPD")
+# facet_peak
 
 # Peak GCC vs. Anomaly in Cumulative VPD
 facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_VPD_Anomaly,y=Peak_GCC)) +
@@ -186,6 +196,74 @@ facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg
   geom_smooth(method = lm) +
   facet_wrap(~Primary_Veg_Type,ncol=2) +
   ggtitle("GSL vs. Mean VPD Anomaly")
+facet_peak
+
+##############################
+# SPEI (multiple time scales)
+##############################
+
+# Peak GCC vs. Mean SPEI (1-month)
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Mean_SPEI_1month,y=Peak_GCC)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Peak GCC vs. Mean SPEI (1-month)")
+facet_peak
+
+# Peak GCC vs. Mean SPEI (3-month)
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Mean_SPEI_3month,y=Peak_GCC)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Peak GCC vs. Mean SPEI (3-month)")
+facet_peak
+
+# Peak GCC vs. Mean SPEI (6-month)
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Mean_SPEI_6month,y=Peak_GCC)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Peak GCC vs. Mean SPEI (6-month)")
+facet_peak
+
+# Peak GCC vs. Mean SPEI (12-month)
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Mean_SPEI_12month,y=Peak_GCC)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Peak GCC vs. Mean SPEI (12-month)")
+facet_peak
+
+# Peak GCC vs. Number of Drought Weeks, SPEI (1-month)
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=SPEI_Drought_Weeks_1month,y=Peak_GCC)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Peak GCC vs. Number of Drought Weeks, 1-month SPEI")
+facet_peak
+
+# Peak GCC vs. Number of Drought Weeks, SPEI (3-month)
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=SPEI_Drought_Weeks_3month,y=Peak_GCC)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Peak GCC vs. Number of Drought Weeks, 3-month SPEI")
+facet_peak
+
+# Peak GCC vs. Number of Drought Weeks, SPEI (6-month)
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=SPEI_Drought_Weeks_6month,y=Peak_GCC)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Peak GCC vs. Number of Drought Weeks, 6-month SPEI")
+facet_peak
+
+# Peak GCC vs. Number of Drought Weeks, SPEI (12-month)
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=SPEI_Drought_Weeks_12month,y=Peak_GCC)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Peak GCC vs. Number of Drought Weeks, 12-month SPEI")
 facet_peak
 
 #########################
@@ -256,6 +334,123 @@ summary(lm(GSL_25 ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="EN"))
 summary(lm(GSL_25 ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="GR")))
 # SH
 summary(lm(GSL_25 ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="SH")))
+
+# GSL vs. Cumulative VPD Anomaly
+
+# AG
+summary(lm(GSL_25 ~ Cumulative_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="AG")))
+# DB
+summary(lm(GSL_25 ~ Cumulative_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="DB")))
+# EN
+summary(lm(GSL_25 ~ Cumulative_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="EN")))
+# GR
+summary(lm(GSL_25 ~ Cumulative_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="GR")))
+# SH
+summary(lm(GSL_25 ~ Cumulative_VPD_Anomaly, filter(temp_data, Primary_Veg_Type=="SH")))
+
+# Peak GCC vs. Mean 1-month SPEI
+
+# AG
+summary(lm(Peak_GCC ~ Mean_SPEI_1month, filter(temp_data, Primary_Veg_Type=="AG")))
+# DB
+summary(lm(Peak_GCC ~ Mean_SPEI_1month, filter(temp_data, Primary_Veg_Type=="DB")))
+# EN
+summary(lm(Peak_GCC ~ Mean_SPEI_1month, filter(temp_data, Primary_Veg_Type=="EN")))
+# GR
+summary(lm(Peak_GCC ~ Mean_SPEI_1month, filter(temp_data, Primary_Veg_Type=="GR")))
+# SH
+summary(lm(Peak_GCC ~ Mean_SPEI_1month, filter(temp_data, Primary_Veg_Type=="SH")))
+
+# Peak GCC vs. Mean 3-month SPEI
+
+# AG
+summary(lm(Peak_GCC ~ Mean_SPEI_3month, filter(temp_data, Primary_Veg_Type=="AG")))
+# DB
+summary(lm(Peak_GCC ~ Mean_SPEI_3month, filter(temp_data, Primary_Veg_Type=="DB")))
+# EN
+summary(lm(Peak_GCC ~ Mean_SPEI_3month, filter(temp_data, Primary_Veg_Type=="EN")))
+# GR
+summary(lm(Peak_GCC ~ Mean_SPEI_3month, filter(temp_data, Primary_Veg_Type=="GR")))
+# SH
+summary(lm(Peak_GCC ~ Mean_SPEI_3month, filter(temp_data, Primary_Veg_Type=="SH")))
+
+# Peak GCC vs. Mean 6-month SPEI
+
+# AG
+summary(lm(Peak_GCC ~ Mean_SPEI_6month, filter(temp_data, Primary_Veg_Type=="AG")))
+# DB
+summary(lm(Peak_GCC ~ Mean_SPEI_6month, filter(temp_data, Primary_Veg_Type=="DB")))
+# EN
+summary(lm(Peak_GCC ~ Mean_SPEI_6month, filter(temp_data, Primary_Veg_Type=="EN")))
+# GR
+summary(lm(Peak_GCC ~ Mean_SPEI_6month, filter(temp_data, Primary_Veg_Type=="GR")))
+# SH
+summary(lm(Peak_GCC ~ Mean_SPEI_6month, filter(temp_data, Primary_Veg_Type=="SH")))
+
+# Peak GCC vs. Mean 12-month SPEI
+
+# AG
+summary(lm(Peak_GCC ~ Mean_SPEI_12month, filter(temp_data, Primary_Veg_Type=="AG")))
+# DB
+summary(lm(Peak_GCC ~ Mean_SPEI_12month, filter(temp_data, Primary_Veg_Type=="DB")))
+# EN
+summary(lm(Peak_GCC ~ Mean_SPEI_12month, filter(temp_data, Primary_Veg_Type=="EN")))
+# GR
+summary(lm(Peak_GCC ~ Mean_SPEI_12month, filter(temp_data, Primary_Veg_Type=="GR")))
+# SH
+summary(lm(Peak_GCC ~ Mean_SPEI_12month, filter(temp_data, Primary_Veg_Type=="SH")))
+
+# Peak GCC vs. Number of drought weeks, 1-month SPEI
+
+# AG
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_1month, filter(temp_data, Primary_Veg_Type=="AG")))
+# DB
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_1month, filter(temp_data, Primary_Veg_Type=="DB")))
+# EN
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_1month, filter(temp_data, Primary_Veg_Type=="EN")))
+# GR
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_1month, filter(temp_data, Primary_Veg_Type=="GR")))
+# SH
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_1month, filter(temp_data, Primary_Veg_Type=="SH")))
+
+# Peak GCC vs. Number of drought weeks, 3-month SPEI
+
+# AG
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_3month, filter(temp_data, Primary_Veg_Type=="AG")))
+# DB
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_3month, filter(temp_data, Primary_Veg_Type=="DB")))
+# EN
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_3month, filter(temp_data, Primary_Veg_Type=="EN")))
+# GR
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_3month, filter(temp_data, Primary_Veg_Type=="GR")))
+# SH
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_3month, filter(temp_data, Primary_Veg_Type=="SH")))
+
+# Peak GCC vs. Number of drought weeks, 6-month SPEI
+
+# AG
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_6month, filter(temp_data, Primary_Veg_Type=="AG")))
+# DB
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_6month, filter(temp_data, Primary_Veg_Type=="DB")))
+# EN
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_6month, filter(temp_data, Primary_Veg_Type=="EN")))
+# GR
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_6month, filter(temp_data, Primary_Veg_Type=="GR")))
+# SH
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_6month, filter(temp_data, Primary_Veg_Type=="SH")))
+
+# Peak GCC vs. Number of drought weeks, 12-month SPEI
+
+# AG
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_12month, filter(temp_data, Primary_Veg_Type=="AG")))
+# DB
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_12month, filter(temp_data, Primary_Veg_Type=="DB")))
+# EN
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_12month, filter(temp_data, Primary_Veg_Type=="EN")))
+# GR
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_12month, filter(temp_data, Primary_Veg_Type=="GR")))
+# SH
+summary(lm(Peak_GCC ~ SPEI_Drought_Weeks_12month, filter(temp_data, Primary_Veg_Type=="SH")))
 
 ###################################
 # Other plots (testing with Darren)
