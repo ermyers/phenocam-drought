@@ -1,4 +1,8 @@
-# Calculate phenometrics
+# Calculate phenometrics using baseline-subtracted GCC
+
+# Note 04/18/2025: Mostly copied code over from calculate_phenometrics.R,
+# changing variable names as appropriate. Got code to run, but haven't checked
+# extensively to see if it's doing what I want.
 
 # Note 3/19/25: Added code under count number of site-years section to determine
 # "primary" growing season in case of multiple growing seasons per year.
@@ -19,15 +23,15 @@ library(ggplot2)
 library(lubridate)
 
 # Load GCC data
-load('outputs/phen_gcc.RData')
+load('outputs/phen_gcc_with_baseline.RData')
 
 #######################################
 # Calculate season start and end dates
 #######################################
 
-growing_seasons_phen <- data.frame(matrix(ncol = 23, nrow = 0))
-x <- c("Phenocam","Veg_Type","ROI","Year","Peak_GCC","Amplitude_GCC_yearly","Amplitude_GCC_peak",
-       "Cumulative_GCC_yearly","Cumulative_GCC","SOS_15","SOS_25","SOS_50","Peak","EOS_50","EOS_25","EOS_15",
+growing_seasons_phen <- data.frame(matrix(ncol = 24, nrow = 0))
+x <- c("Phenocam","Veg_Type","ROI","Year","Peak_GCC","Peak_GCC_baseline_subtracted","Amplitude_GCC_yearly","Amplitude_GCC_peak",
+       "Cumulative_GCC_yearly","Cumulative_GCC_to_EOS","SOS_15","SOS_25","SOS_50","Peak","EOS_50","EOS_25","EOS_15",
        "SOS_15_flag","SOS_25_flag","SOS_50_flag","Peak_flag","EOS_50_flag","EOS_25_flag","EOS_15_flag")
 colnames(growing_seasons_phen) <- x
 
@@ -35,12 +39,12 @@ colnames(growing_seasons_phen) <- x
 
 # Create a list of unique phenocam ROIs
 #unique_phenocams <- phen_gcc %>% filter(Year >= 2016) %>% distinct(Phenocam,Veg_Type,ROI)
-unique_phenocams <- phen_gcc %>% distinct(Phenocam,Veg_Type,ROI)
+unique_phenocams <- phen_gcc_with_baseline %>% distinct(Phenocam,Veg_Type,ROI)
 for (i in 1:nrow(unique_phenocams)){
   phenocam <- unique_phenocams$Phenocam[i]
   veg_type <- unique_phenocams$Veg_Type[i]
   roi <- unique_phenocams$ROI[i]
-  phen_subset <- phen_gcc %>% filter(Phenocam == phenocam, Veg_Type == veg_type, ROI == roi)
+  phen_subset <- phen_gcc_with_baseline %>% filter(Phenocam == phenocam, Veg_Type == veg_type, ROI == roi)
   
   # print statements
   print(paste("i = ",i," out of ",nrow(unique_phenocams),", phenocam = ",phenocam,", veg_type = ",veg_type," roi = ",roi,sep=""))
@@ -51,12 +55,12 @@ for (i in 1:nrow(unique_phenocams)){
     date_max <- tail(filter(phen_subset, Year==year),n=1)$Date + 185
     date_subset <- filter(phen_subset, Date>=date_min & Date<= date_max)
     
-    min_GCC <- min(date_subset$smooth_gcc_90,na.rm=TRUE)
-    max_GCC <- max(date_subset$smooth_gcc_90,na.rm=TRUE)
-    candidate_peaks <- findpeaks(date_subset$smooth_gcc_90, peakpat = "[+]{1,}[0]*[-]{1,}")
+    min_GCC <- min(date_subset$smooth_gcc_baseline_subtracted,na.rm=TRUE)
+    max_GCC <- max(date_subset$smooth_gcc_baseline_subtracted,na.rm=TRUE)
+    candidate_peaks <- findpeaks(date_subset$smooth_gcc_baseline_subtracted, peakpat = "[+]{1,}[0]*[-]{1,}")
     candidate_peaks_chrono <- date_subset[candidate_peaks[,2],] # extract rows containing candidate peaks
     all_candidate_peaks_chrono <- candidate_peaks_chrono
-    candidate_peaks_sorted <- dplyr::arrange(candidate_peaks_chrono,smooth_gcc_90) # candidate peaks sorted in ascending order of value
+    candidate_peaks_sorted <- dplyr::arrange(candidate_peaks_chrono,smooth_gcc_baseline_subtracted) # candidate peaks sorted in ascending order of value
     all_candidate_peaks_sorted <- candidate_peaks_sorted
     
     # print statements
@@ -102,11 +106,12 @@ for (i in 1:nrow(unique_phenocams)){
           candidate_peaks_chrono <- candidate_peaks_chrono[candidate_peaks_chrono$Date != date,]
         } else{
           peak_subset <- filter(phen_subset, Date>=date-dist_to_prev & Date<=date+dist_to_next)
-          pre_peak_min <- min(filter(peak_subset,Date<=date-30)$smooth_gcc_90,na.rm=TRUE)
-          pre_peak_min_date <- min(filter(peak_subset,smooth_gcc_90==pre_peak_min)$Date,na.rm=TRUE)
-          post_peak_min <- min(filter(peak_subset, Date>=date+30)$smooth_gcc_90,na.rm=TRUE)
-          post_peak_min_date <- max(filter(peak_subset,smooth_gcc_90==post_peak_min)$Date,na.rm=TRUE)
-          peak_value <- filter(peak_subset, Date==date)$smooth_gcc_90
+          pre_peak_min <- min(filter(peak_subset,Date<=date-30)$smooth_gcc_baseline_subtracted,na.rm=TRUE)
+          pre_peak_min_date <- min(filter(peak_subset,smooth_gcc_baseline_subtracted==pre_peak_min)$Date,na.rm=TRUE)
+          post_peak_min <- min(filter(peak_subset, Date>=date+30)$smooth_gcc_baseline_subtracted,na.rm=TRUE)
+          post_peak_min_date <- max(filter(peak_subset,smooth_gcc_baseline_subtracted==post_peak_min)$Date,na.rm=TRUE)
+          peak_value <- filter(peak_subset, Date==date)$smooth_gcc_baseline_subtracted
+          peak_gcc_value <- filter(peak_subset, Date==date)$smooth_gcc_90
           
           # print statements
           # if(pre_peak_min == Inf | post_peak_min == Inf){
@@ -125,7 +130,7 @@ for (i in 1:nrow(unique_phenocams)){
             
             # print statements
             # print(paste("% of total variation =",(peak_value-pre_peak_min)/(max_GCC-min_GCC),(peak_value-post_peak_min)/(max_GCC-min_GCC)))
-
+            
           } else{
             
             # Only consider peak values that are in the calendar year
@@ -139,12 +144,12 @@ for (i in 1:nrow(unique_phenocams)){
               EOS_50_thresh <- 0.50*(peak_value-post_peak_min) + post_peak_min
               EOS_25_thresh <- 0.25*(peak_value-post_peak_min) + post_peak_min
               EOS_15_thresh <- 0.15*(peak_value-post_peak_min) + post_peak_min
-              SOS_15 <- min(filter(peak_subset, smooth_gcc_90>SOS_15_thresh & Date >= pre_peak_min_date)$Date, na.rm=TRUE)
-              SOS_25 <- min(filter(peak_subset, smooth_gcc_90>SOS_25_thresh & Date >= pre_peak_min_date)$Date, na.rm=TRUE)
-              SOS_50 <- min(filter(peak_subset, smooth_gcc_90>SOS_50_thresh & Date >= pre_peak_min_date)$Date, na.rm=TRUE)
-              EOS_50 <- max(filter(peak_subset, smooth_gcc_90>EOS_50_thresh & Date <= post_peak_min_date)$Date, na.rm=TRUE)
-              EOS_25 <- max(filter(peak_subset, smooth_gcc_90>EOS_25_thresh & Date <= post_peak_min_date)$Date, na.rm=TRUE)
-              EOS_15 <- max(filter(peak_subset, smooth_gcc_90>EOS_15_thresh & Date <= post_peak_min_date)$Date, na.rm=TRUE)
+              SOS_15 <- min(filter(peak_subset, smooth_gcc_baseline_subtracted>SOS_15_thresh & Date >= pre_peak_min_date)$Date, na.rm=TRUE)
+              SOS_25 <- min(filter(peak_subset, smooth_gcc_baseline_subtracted>SOS_25_thresh & Date >= pre_peak_min_date)$Date, na.rm=TRUE)
+              SOS_50 <- min(filter(peak_subset, smooth_gcc_baseline_subtracted>SOS_50_thresh & Date >= pre_peak_min_date)$Date, na.rm=TRUE)
+              EOS_50 <- max(filter(peak_subset, smooth_gcc_baseline_subtracted>EOS_50_thresh & Date <= post_peak_min_date)$Date, na.rm=TRUE)
+              EOS_25 <- max(filter(peak_subset, smooth_gcc_baseline_subtracted>EOS_25_thresh & Date <= post_peak_min_date)$Date, na.rm=TRUE)
+              EOS_15 <- max(filter(peak_subset, smooth_gcc_baseline_subtracted>EOS_15_thresh & Date <= post_peak_min_date)$Date, na.rm=TRUE)
               date_peak <- peak_subset[peak_subset$Date==date,]$Date
               
               # Calculate cumulative GCC (start of year to EOS 25) and cumulative yearly GCC (start to end of year)
@@ -153,16 +158,16 @@ for (i in 1:nrow(unique_phenocams)){
                 cumulative_gcc <- NA
                 cumulative_gcc_yearly <- NA
               } else{
-                cumulative_gcc <- sum(filter(year_subset, Date <= EOS_25)$smooth_gcc_90, na.rm=TRUE)
+                cumulative_gcc <- sum(filter(year_subset, Date <= EOS_25)$smooth_gcc_baseline_subtracted, na.rm=TRUE)
                 if(max(year_subset$DOY, na.rm=TRUE)<365){
                   cumulative_gcc_yearly <- NA
-                  } else{
-                  cumulative_gcc_yearly <- sum(year_subset$smooth_gcc_90, na.rm=TRUE)
-                  }
+                } else{
+                  cumulative_gcc_yearly <- sum(year_subset$smooth_gcc_baseline_subtracted, na.rm=TRUE)
+                }
               }
               
               # Calculate yearly GCC amplitude
-              yearly_amplitude <- max(year_subset$smooth_gcc_90) - min(year_subset$smooth_gcc_90)
+              yearly_amplitude <- max(year_subset$smooth_gcc_baseline_subtracted) - min(year_subset$smooth_gcc_baseline_subtracted)
               
               # Check for int_flags within two weeks of key points
               SOS_15_flag <- sum(filter(peak_subset, Date >= SOS_15-7 & Date <= SOS_15+7)$int_flag, na.rm=TRUE)
@@ -178,11 +183,12 @@ for (i in 1:nrow(unique_phenocams)){
                                     Veg_Type = veg_type,
                                     ROI = roi,
                                     Year = year,
-                                    Peak_GCC = peak_value,
+                                    Peak_GCC = peak_gcc_value,
+                                    Peak_GCC_baseline_subtracted = peak_value,
                                     Amplitude_GCC_yearly = yearly_amplitude,
                                     Amplitude_GCC_peak = peak_amplitude,
                                     Cumulative_GCC_yearly = cumulative_gcc_yearly,
-                                    Cumulative_GCC = cumulative_gcc,
+                                    Cumulative_GCC_to_EOS = cumulative_gcc,
                                     SOS_15 = SOS_15,
                                     SOS_25 = SOS_25,
                                     SOS_50 = SOS_50,
@@ -215,13 +221,13 @@ rm(all_candidate_peaks_chrono,all_candidate_peaks_sorted,candidate_peaks,candida
    candidate_peaks_sorted,date_subset,new_row,peak_subset,phen_subset,unique_phenocams,year_subset)
 rm(cumulative_gcc,cumulative_gcc_yearly,date,date_max,date_min,date_peak,dist_to_next,dist_to_prev,EOS_15,EOS_15_flag,
    EOS_15_thresh,EOS_25,EOS_25_flag,EOS_25_thresh,EOS_50,EOS_50_flag,EOS_50_thresh,
-   i,j,max_GCC,min_GCC,peak_amplitude,peak_flag,peak_index,peak_value,phenocam,post_peak_min,
+   i,j,max_GCC,min_GCC,peak_amplitude,peak_flag,peak_gcc_value,peak_index,peak_value,phenocam,post_peak_min,
    post_peak_min_date,pre_peak_min,pre_peak_min_date,roi,SOS_15,SOS_15_flag,SOS_15_thresh,
    SOS_25,SOS_25_flag,SOS_25_thresh,SOS_50,SOS_50_flag,SOS_50_thresh,veg_type,x,year,yearly_amplitude)
 
 # Optional - plot selected results
 ggplot() +
-  geom_point(data=filter(phen_gcc, Phenocam=="ibp" & Veg_Type=="XX"), aes(x=Date,y=smooth_gcc_90)) +
+  geom_point(data=filter(phen_gcc_with_baseline, Phenocam=="ibp" & Veg_Type=="XX"), aes(x=Date,y=smooth_gcc_baseline_subtracted)) +
   geom_vline(xintercept = filter(growing_seasons_phen, Phenocam=="ibp" & Veg_Type=="XX")$SOS_15, color="yellow") +
   geom_vline(xintercept = filter(growing_seasons_phen, Phenocam=="ibp"& Veg_Type=="XX")$EOS_15, color="brown") +
   geom_vline(xintercept = filter(growing_seasons_phen, Phenocam=="ibp" & Veg_Type=="XX")$SOS_50, color="green") +
@@ -234,30 +240,30 @@ ggplot() +
 # Add a new field (Primary_Growing_Season) to growing_seasons_phen
 growing_seasons_phen <- cbind(growing_seasons_phen, "Primary_Growing_Season" = "no")
 
-growing_seasons_phen_number <- data.frame(matrix(ncol = 7, nrow = 0))
-x <- c("Phenocam","Veg_Type","ROI","Year","Number_Growing_Seasons","Peak_GCC","Amplitude_GCC_yearly")
+growing_seasons_phen_number <- data.frame(matrix(ncol = 6, nrow = 0))
+x <- c("Phenocam","Veg_Type","ROI","Year","Number_Growing_Seasons","Amplitude_GCC_yearly")
 colnames(growing_seasons_phen_number) <- x
 
-unique_phenocams <- phen_gcc %>% distinct(Phenocam,Veg_Type,ROI)
+unique_phenocams <- phen_gcc_with_baseline %>% distinct(Phenocam,Veg_Type,ROI)
 for (i in 1:nrow(unique_phenocams)){
   phenocam <- unique_phenocams$Phenocam[i]
   veg_type <- unique_phenocams$Veg_Type[i]
   roi <- unique_phenocams$ROI[i]
-  phen_subset <- phen_gcc %>% filter(Phenocam == phenocam, Veg_Type == veg_type, ROI == roi)
+  phen_subset <- phen_gcc_with_baseline %>% filter(Phenocam == phenocam, Veg_Type == veg_type, ROI == roi)
   # print statements
   print(paste("i = ",i," out of ",nrow(unique_phenocams),", phenocam = ",phenocam,", veg_type = ",veg_type," roi = ",roi,sep=""))
   for (year in unique(phen_subset$Year)){
     # check that we have non-interpolated data for most of the year
     if(nrow(filter(phen_subset,Year==year & is.na(int_flag)==TRUE))>=200){
       number_growing_seasons <- nrow(filter(growing_seasons_phen, Phenocam==phenocam & Veg_Type==veg_type & ROI==roi & Year==year))
-      peak_gcc <- max(filter(phen_gcc, Phenocam==phenocam & Veg_Type==veg_type & ROI==roi & Year==year)$smooth_gcc_90, na.rm=TRUE)
-      yearly_amplitude <- max(filter(phen_gcc, Phenocam==phenocam & Veg_Type==veg_type & ROI==roi & Year==year)$smooth_gcc_90, na.rm=TRUE) - min(filter(phen_gcc, Phenocam==phenocam & Veg_Type==veg_type & ROI==roi & Year==year)$smooth_gcc_90, na.rm=TRUE)
+      #peak_gcc <- max(filter(phen_gcc_with_baseline, Phenocam==phenocam & Veg_Type==veg_type & ROI==roi & Year==year)$smooth_gcc_baseline_subtracted, na.rm=TRUE)
+      #yearly_amplitude <- max(filter(phen_gcc_with_baseline, Phenocam==phenocam & Veg_Type==veg_type & ROI==roi & Year==year)$smooth_gcc_baseline_subtracted, na.rm=TRUE) - min(filter(phen_gcc_with_baseline, Phenocam==phenocam & Veg_Type==veg_type & ROI==roi & Year==year)$smooth_gcc_baseline_subtracted, na.rm=TRUE)
+      yearly_amplitude <- max(filter(phen_gcc_with_baseline, Phenocam==phenocam & Veg_Type==veg_type & ROI==roi & Year==year)$smooth_gcc_baseline_subtracted, na.rm=TRUE)
       new_row <- data.frame(Phenocam = phenocam,
                             Veg_Type = veg_type,
                             ROI = roi,
                             Year = year,
                             Number_Growing_Seasons = number_growing_seasons,
-                            Peak_GCC = peak_gcc,
                             Amplitude_GCC_yearly = yearly_amplitude)
       growing_seasons_phen_number <- rbind(growing_seasons_phen_number,new_row)
       
@@ -276,21 +282,22 @@ for (i in 1:nrow(unique_phenocams)){
 }
 
 # Optional - remove variables
-rm(new_row, phen_subset,unique_phenocams,i,number_growing_seasons,peak_gcc,peak_gcc_val,phenocam,roi,temp_df,veg_type,x,year,yearly_amplitude)
+rm(new_row, phen_subset,unique_phenocams,i,number_growing_seasons,peak_gcc_val,phenocam,roi,temp_df,veg_type,x,year,yearly_amplitude)
 
 ###############################################################
 # Identify typical growing season values for each phenocam ROI
 ###############################################################
 
-growing_seasons_phen_ave <- data.frame(matrix(ncol = 24, nrow = 0))
-x <- c("Phenocam","Veg_Type","ROI","Peak_GCC_mean","Amplitude_GCC_yearly_mean","Amplitude_GCC_peak_mean",
+growing_seasons_phen_ave <- data.frame(matrix(ncol = 25, nrow = 0))
+x <- c("Phenocam","Veg_Type","ROI","Peak_GCC_mean","Peak_GCC_baseline_subtracted_mean",
+       "Amplitude_GCC_yearly_mean","Amplitude_GCC_peak_mean",
        "Cumulative_GCC_yearly_mean","Cumulative_GCC_mean","SOS_15_mean","SOS_25_mean",
        "SOS_50_mean","Peak_mean","EOS_50_mean","EOS_25_mean","EOS_15_mean",
        "Peak_GCC_std","SOS_15_std","SOS_25_std","SOS_50_std","Peak_std",
        "EOS_50_std","EOS_25_std","EOS_15_std","Number_Years")
 colnames(growing_seasons_phen_ave) <- x
 
-unique_phenocams <- phen_gcc %>% distinct(Phenocam,Veg_Type,ROI)
+unique_phenocams <- phen_gcc_with_baseline %>% distinct(Phenocam,Veg_Type,ROI)
 
 for (i in 1:nrow(unique_phenocams)){
   phenocam <- unique_phenocams$Phenocam[i]
@@ -304,10 +311,11 @@ for (i in 1:nrow(unique_phenocams)){
   for(year in unique(phen_subset$Year)){
     if (nrow(filter(phen_subset, Year==year)) > 1){
       peak_gcc <- max(filter(phen_subset, Year==year)$Peak_GCC, na.rm = TRUE)
+      peak_gcc_baseline_subtracted <- max(filter(phen_subset, Year==year)$Peak_GCC_baseline_subtracted, na.rm = TRUE)
       yearly_amplitude <- max(filter(phen_subset, Year==year)$Amplitude_GCC_yearly, na.rm = TRUE)
       peak_amplitude <- max(filter(phen_subset, Year==year)$Amplitude_GCC_peak, na.rm = TRUE)
       cumulative_gcc_yearly <- max(filter(phen_subset, Year==year)$Cumulative_GCC_yearly, na.rm = TRUE)
-      cumulative_gcc <- max(filter(phen_subset, Year==year)$Cumulative_GCC, na.rm = TRUE)
+      cumulative_gcc <- max(filter(phen_subset, Year==year)$Cumulative_GCC_to_EOS, na.rm = TRUE)
       if(cumulative_gcc==-Inf){
         cumulative_gcc <- NA
       }
@@ -324,10 +332,11 @@ for (i in 1:nrow(unique_phenocams)){
                             ROI = roi,
                             Year = year,
                             Peak_GCC = peak_gcc,
+                            Peak_GCC_baseline_subtracted = peak_gcc_baseline_subtracted,
                             Amplitude_GCC_yearly = yearly_amplitude,
                             Amplitude_GCC_peak = peak_amplitude,
                             Cumulative_GCC_yearly = cumulative_gcc_yearly,
-                            Cumulative_GCC = cumulative_gcc,
+                            Cumulative_GCC_to_EOS = cumulative_gcc,
                             SOS_15 = sos_15,
                             SOS_25 = sos_25,
                             SOS_50 = sos_50,
@@ -354,10 +363,11 @@ for (i in 1:nrow(unique_phenocams)){
                         Veg_Type = veg_type,
                         ROI = roi,
                         Peak_GCC_mean = mean(phen_subset$Peak_GCC, na.rm=TRUE),
+                        Peak_GCC_baseline_subtracted_mean = mean(phen_subset$Peak_GCC_baseline_subtracted, na.rm=TRUE),
                         Amplitude_GCC_yearly_mean = mean(phen_subset$Amplitude_GCC_yearly, na.rm=TRUE),
                         Amplitude_GCC_peak_mean = mean(phen_subset$Amplitude_GCC_peak, na.rm=TRUE),
                         Cumulative_GCC_yearly_mean = mean(phen_subset$Cumulative_GCC_yearly, na.rm=TRUE),
-                        Cumulative_GCC_mean = mean(phen_subset$Cumulative_GCC, na.rm=TRUE),
+                        Cumulative_GCC_to_EOS_mean = mean(phen_subset$Cumulative_GCC_to_EOS, na.rm=TRUE),
                         SOS_15_mean = mean(phen_subset$SOS_15, na.rm=TRUE),
                         SOS_25_mean = mean(phen_subset$SOS_25, na.rm=TRUE),
                         SOS_50_mean = mean(phen_subset$SOS_50, na.rm=TRUE),
@@ -379,10 +389,10 @@ for (i in 1:nrow(unique_phenocams)){
 
 # Optional - remove variables
 rm(cumulative_gcc_yearly, cumulative_gcc, new_row, phen_subset, unique_phenocams, eos_15, eos_25, eos_50, 
-   i, peak, peak_amplitude, peak_gcc, phenocam, roi, sos_15, sos_25, sos_50, veg_type, x, year, yearly_amplitude)
+   i, peak, peak_amplitude, peak_gcc, peak_gcc_baseline_subtracted, phenocam, roi, sos_15, sos_25, sos_50, veg_type, x, year, yearly_amplitude)
 
 # Optional - save results
-save(growing_seasons_phen, growing_seasons_phen_number, growing_seasons_phen_ave, file = "outputs/growing_seasons_phen.RData")
+save(growing_seasons_phen, growing_seasons_phen_number, growing_seasons_phen_ave, file = "outputs/growing_seasons_phen_baseline_subtracted.RData")
 
 ##########################
 # Limit data to 2016-2024
@@ -395,15 +405,16 @@ growing_seasons_phen <- filter(growing_seasons_phen, Year >= 2016)
 growing_seasons_phen_number <- filter(growing_seasons_phen_number, Year >= 2016)
 
 # Typical growing season values (2016-2024 only)
-growing_seasons_phen_ave <- data.frame(matrix(ncol = 24, nrow = 0))
-x <- c("Phenocam","Veg_Type","ROI","Peak_GCC_mean","Amplitude_GCC_yearly_mean","Amplitude_GCC_peak_mean",
+growing_seasons_phen_ave <- data.frame(matrix(ncol = 25, nrow = 0))
+x <- c("Phenocam","Veg_Type","ROI","Peak_GCC_mean","Peak_GCC_baseline_subtracted_mean",
+       "Amplitude_GCC_yearly_mean","Amplitude_GCC_peak_mean",
        "Cumulative_GCC_yearly_mean","Cumulative_GCC_mean","SOS_15_mean","SOS_25_mean",
        "SOS_50_mean","Peak_mean","EOS_50_mean","EOS_25_mean","EOS_15_mean",
        "Peak_GCC_std","SOS_15_std","SOS_25_std","SOS_50_std","Peak_std",
        "EOS_50_std","EOS_25_std","EOS_15_std","Number_Years")
 colnames(growing_seasons_phen_ave) <- x
 
-unique_phenocams <- phen_gcc %>% filter(Year >= 2016) %>% distinct(Phenocam,Veg_Type,ROI)
+unique_phenocams <- phen_gcc_with_baseline %>% filter(Year >= 2016) %>% distinct(Phenocam,Veg_Type,ROI)
 
 for (i in 1:nrow(unique_phenocams)){
   phenocam <- unique_phenocams$Phenocam[i]
@@ -417,10 +428,11 @@ for (i in 1:nrow(unique_phenocams)){
   for(year in unique(phen_subset$Year)){
     if (nrow(filter(phen_subset, Year==year)) > 1){
       peak_gcc <- max(filter(phen_subset, Year==year)$Peak_GCC, na.rm = TRUE)
+      peak_gcc_baseline_subtracted <- max(filter(phen_subset, Year==year)$Peak_GCC_baseline_subtracted, na.rm = TRUE)
       yearly_amplitude <- max(filter(phen_subset, Year==year)$Amplitude_GCC_yearly, na.rm = TRUE)
       peak_amplitude <- max(filter(phen_subset, Year==year)$Amplitude_GCC_peak, na.rm = TRUE)
       cumulative_gcc_yearly <- max(filter(phen_subset, Year==year)$Cumulative_GCC_yearly, na.rm = TRUE)
-      cumulative_gcc <- max(filter(phen_subset, Year==year)$Cumulative_GCC, na.rm = TRUE)
+      cumulative_gcc <- max(filter(phen_subset, Year==year)$Cumulative_GCC_to_EOS, na.rm = TRUE)
       if(cumulative_gcc==-Inf){
         cumulative_gcc <- NA
       }
@@ -437,10 +449,11 @@ for (i in 1:nrow(unique_phenocams)){
                             ROI = roi,
                             Year = year,
                             Peak_GCC = peak_gcc,
+                            Peak_GCC_baseline_subtracted = peak_gcc_baseline_subtracted,
                             Amplitude_GCC_yearly = yearly_amplitude,
                             Amplitude_GCC_peak = peak_amplitude,
                             Cumulative_GCC_yearly = cumulative_gcc_yearly,
-                            Cumulative_GCC = cumulative_gcc,
+                            Cumulative_GCC_to_EOS = cumulative_gcc,
                             SOS_15 = sos_15,
                             SOS_25 = sos_25,
                             SOS_50 = sos_50,
@@ -467,10 +480,11 @@ for (i in 1:nrow(unique_phenocams)){
                         Veg_Type = veg_type,
                         ROI = roi,
                         Peak_GCC_mean = mean(phen_subset$Peak_GCC, na.rm=TRUE),
+                        Peak_GCC_baseline_subtracted_mean = mean(phen_subset$Peak_GCC_baseline_subtracted, na.rm=TRUE),
                         Amplitude_GCC_yearly_mean = mean(phen_subset$Amplitude_GCC_yearly, na.rm=TRUE),
                         Amplitude_GCC_peak_mean = mean(phen_subset$Amplitude_GCC_peak, na.rm=TRUE),
                         Cumulative_GCC_yearly_mean = mean(phen_subset$Cumulative_GCC_yearly, na.rm=TRUE),
-                        Cumulative_GCC_mean = mean(phen_subset$Cumulative_GCC, na.rm=TRUE),
+                        Cumulative_GCC_to_EOS_mean = mean(phen_subset$Cumulative_GCC_to_EOS, na.rm=TRUE),
                         SOS_15_mean = mean(phen_subset$SOS_15, na.rm=TRUE),
                         SOS_25_mean = mean(phen_subset$SOS_25, na.rm=TRUE),
                         SOS_50_mean = mean(phen_subset$SOS_50, na.rm=TRUE),
@@ -491,7 +505,7 @@ for (i in 1:nrow(unique_phenocams)){
 }
 
 rm(cumulative_gcc_yearly, cumulative_gcc, new_row, phen_subset, unique_phenocams, eos_15, eos_25, eos_50, 
-   i, peak, peak_amplitude, peak_gcc, phenocam, roi, sos_15, sos_25, sos_50, veg_type, x, year, yearly_amplitude)
+   i, peak, peak_amplitude, peak_gcc, peak_gcc_baseline_subtracted, phenocam, roi, sos_15, sos_25, sos_50, veg_type, x, year, yearly_amplitude)
 
 # Save results
-save(growing_seasons_phen, growing_seasons_phen_number, growing_seasons_phen_ave, file = "outputs/growing_seasons_phen_2016_to_2024.RData")
+save(growing_seasons_phen, growing_seasons_phen_number, growing_seasons_phen_ave, file = "outputs/growing_seasons_phen_2016_to_2024_baseline_subtracted.RData")
