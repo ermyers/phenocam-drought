@@ -1,53 +1,19 @@
-# Reclassify drought monitor data
+# Calculate drought statistics
 
 library(tidyverse)
 library(patchwork)
 
 # Load data
 load("outputs/phen_gcc.RData")
-#load("outputs/vci_weekly.RData")
 load("outputs/phen_usdm.RData")
-load("outputs/growing_seasons_phen.RData")
-
-##########
-# For VCI
-##########
-
-# # Sort DM into binary categories:
-# # -1-0: no drought -> 0
-# # 1-4: drought -> 1
-# 
-# vci_weekly <- cbind(vci_weekly,USDM_reclassified=NA)
-# vci_weekly[vci_weekly$USDM_weekly<=0,]$USDM_reclassified <- 0 # not drought
-# vci_weekly[vci_weekly$USDM_weekly>=1,]$USDM_reclassified <- 1 # drought
-# 
-# # Record whether DM is increasing, decreasing, or same
-# 
-# vci_weekly_modified <- data.frame()
-# unique_phenocams <- vci_weekly %>% distinct(Phenocam,Veg_Type,ROI)
-# 
-# for (i in 1:nrow(unique_phenocams)){
-#   phenocam <- unique_phenocams$Phenocam[i]
-#   veg_type <- unique_phenocams$Veg_Type[i]
-#   roi <- unique_phenocams$ROI[i]
-#   temp_df <- vci_weekly %>% filter(Phenocam == phenocam, Veg_Type == veg_type, ROI == roi)
-#   temp_df <- cbind(temp_df, full_USDM_change=NA, reclass_USDM_change=NA)
-#   for (j in 2:nrow(temp_df)){
-#     temp_df$full_USDM_change[j] <- temp_df$USDM_weekly[j] - temp_df$USDM_weekly[j-1]
-#     temp_df$reclass_USDM_change[j] <- temp_df$USDM_reclassified[j] - temp_df$USDM_reclassified[j-1]
-#   }
-#   vci_weekly_modified <- rbind(vci_weekly_modified,temp_df)
-# }
-# 
-# # Optional
-# rm(temp_df,phenocam,veg_type,roi,i,j)
+load("outputs/growing_seasons_phen_2016_to_2024_baseline_subtracted.RData")
 
 ###########
 # For USDM
 ###########
 
 # Sort DM into binary categories:
-# -1-0: no drought -> 0
+# -1-0: not drought -> 0
 # 1-4: drought -> 1
 
 phen_usdm <- cbind(phen_usdm,USDM_reclassified=NA)
@@ -75,13 +41,15 @@ rm(temp_df,phenocam,i,j)
 
 # Remove drought periods with no corresponding phenocam data
 phen_usdm_modified_filtered <- data.frame()
-growing_seasons <- distinct(growing_seasons_phen_number, Phenocam, Year)
-unique_phenocams <- growing_seasons %>% distinct(Phenocam)
+#site_years <- distinct(site_year_statistics, Phenocam, Year)
+unique_phenocams <- site_year_statistics %>% distinct(Phenocam)
 
 for (i in 1:nrow(unique_phenocams)){
   phenocam <- unique_phenocams$Phenocam[i]
-  year_min <- min(filter(growing_seasons, Phenocam==phenocam)$Year, na.rm=TRUE)
-  year_max <- max(filter(growing_seasons, Phenocam==phenocam)$Year, na.rm=TRUE)
+#  year_min <- min(filter(growing_seasons, Phenocam==phenocam)$Year, na.rm=TRUE)
+#  year_max <- max(filter(growing_seasons, Phenocam==phenocam)$Year, na.rm=TRUE)
+  year_min <- min(filter(site_year_statistics, Phenocam==phenocam)$Year, na.rm=TRUE)
+  year_max <- max(filter(site_year_statistics, Phenocam==phenocam)$Year, na.rm=TRUE)
   temp_df <- filter(phen_usdm_modified, Phenocam==phenocam & Year>=year_min & Year<=year_max)
   phen_usdm_modified_filtered <- rbind(phen_usdm_modified_filtered, temp_df)
 }
@@ -166,6 +134,7 @@ rm(unique_phenocams, i, phenocam, temp_df, temp_drought_change, new_row,
 # USDM histogram
 ggplot(data = filter(drought_statistics, Sum_USDM>0), aes(x=Number_Weeks)) + geom_histogram(binwidth=1)
 ggplot(data = filter(drought_statistics, Sum_USDM>0), aes(x=Sum_USDM)) + geom_histogram(binwidth=1)
+ggplot(data = filter(drought_statistics, Sum_USDM>0), aes(x=Sum_USDM, y=Number_Weeks)) + geom_point()
 
 # Optional - save outputs
 save(drought_statistics,phen_usdm_modified, file="outputs/drought_statistics.RData")
