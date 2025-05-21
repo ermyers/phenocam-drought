@@ -14,21 +14,26 @@ This project explores the relationship between PhenoCam GCC metrics and drought.
 | U.S. Counties | 2023 U.S. county boundaries, provided in shapefile format by the U.S. Census Bureau. | https://www.census.gov/geographies/mapping-files.html | [Direct download link](https://www2.census.gov/geo/tiger/TIGER2023/COUNTY/tl_2023_us_county.zip) |
 | Vapor Pressure Deficit (VPD) | Daily VPD values at phenocam locations, provided by the National Drought Mitigation Center (NDMC) and derived from 5 KM raster data. | https://drought.unl.edu/ | N/A |
 | Standardized Precipitation and Evapotranspiration Index (SPEI) | Weekly SPEI values at phenocam locations, provided by the National Drought Mitigation Center and derived from 5 KM raster data. | https://drought.unl.edu/ | N/A |
+| Aridity Index | Average of annual aridity index for the years 1970-2000, provided at 30 arc second resolution. | [Future Global Aridity Index and PET Database (CMIP_6)](https://doi.org/10.57760/sciencedb.nbsdc.00086) | [1970-2000 aridity and PET](https://cstr.cn/16666.47.sciencedb.nbsdc.00086.0021605F.V2.V3.V4.V5.V6.V7)|
 
 ## Getting started
 
 ### Download shapefiles
-U.S. county shapefile is too large for github and needs to be downloaded locally. USDM and Level I Ecoregions shapefiles should already exist in the correct folders, but can be manually re-downloaded if needed.
+The U.S. county shapefile is too large for github and needs to be downloaded locally. USDM and Level I Ecoregions shapefiles should already exist in the correct folders, but can be manually re-downloaded if needed.
 - U.S. county shapefile should be downloaded and unzipped into data/shapefiles. (File path: data/shapefiles/tl_2023_us_county.shp)
 - USDM shapefiles should be located in data/usdm/YEAR, with years between 2010 and 2024. (Example file path: data/usdm/2024/USDM_20241231.shp)
 - Level I ecoregions shapefile should be downloaded and unzipped into data/ecoregions. (File path: data/ecoregions/NA_CEC_Eco_Level1.shp)
+
+### Download aridity data
+The global aridity index tif is too large for github and needs to be downloaded locally.
+- From the download link for Aridity Index, WorldClim_2_1_1970-2000.zip should be downloaded and unzipped into data/WorldClim_2_1_1970-2000. (File path: data/shapefiles/WorldClim_2_1_1970-2000/aridity_index.tif)
 
 ### Run data download and preparation scripts
 **create_phenocam_list.R** generates sitename lists and point location shapefiles of Type I PhenoCams located within the United States with at least 3, 4, and 5 years of GCC data, and saves them in outputs/phenocam_lists.RData and outputs/shapefiles. Certain unsuitable sites (e.g. NEON understory, spruce temperature- or rainfall-manipulated plots) are removed from the analysis at this stage.
 
 **download_phenocam_gcc.R** downloads all phenocam GCC from the 4 year list into data/phenocam-gcc.
 
-**extract_ecoregions_at_phen_locations.R** extracts level I ecoregion values for all PhenoCam locations, and saves this information in outputs/phen_with_ecoregion.RData.
+**extract_ecoregions_at_phen_locations.R** extracts level I ecoregion values and aridity index values for all PhenoCam locations, and saves this information in outputs/phen_with_ecoregion.RData.
 
 **extract_usdm_at_phen_locations.R** extracts USDM values for a given year (given by year_list) for all PhenoCam locations, and saves these values in outputs/phen_usdm_YEAR.RData. This code should be run for each year of interest.
 
