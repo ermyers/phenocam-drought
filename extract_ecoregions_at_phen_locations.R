@@ -1,4 +1,4 @@
-# Extract Level 1 ecoregions at phenocam locations
+# Extract Level 1 ecoregions and aridity index at phenocam locations
 
 library(terra)
 
@@ -14,12 +14,22 @@ level_1_ecoregions_vect <- project(level_1_ecoregions_vect,type1_sites_usa_vect)
 crs(level_1_ecoregions_vect)
 level_1_ecoregions_df <- as.data.frame(level_1_ecoregions_vect)
 
+# Load in aridity index raster
+aridity_index <- rast("data/WorldClim_2_1_1970-2000/aridity_index.tif")
+crs(aridity_index)
+
 # Extract ecoregion values at phenocam locations
 phen_with_ecoregion <- terra::intersect(type1_sites_usa_vect,level_1_ecoregions_vect)
+
+# Extract aridity index values at phenocam locations
+aridity_at_phen_locations <- terra::extract(aridity_index,phen_with_ecoregion)
+phen_with_ecoregion$aridity_index <- aridity_at_phen_locations[,-1]
+
 phen_with_ecoregion_df <- as.data.frame(phen_with_ecoregion)
 
 # Plot
-plot(phen_with_ecoregion,39)
+plot(phen_with_ecoregion,39) # ecoregion
+plot(phen_with_ecoregion,42) # aridity index
 
 # Save
 save(phen_with_ecoregion_df,file="outputs/phen_with_ecoregion.RData")

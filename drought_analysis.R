@@ -134,11 +134,16 @@ site_year_statistics_drought_filtered <- left_join(site_year_statistics_drought_
 
 site_year_statistics_drought_filtered <- left_join(site_year_statistics_drought_filtered, spei_statistics_filtered, by=join_by(Phenocam,Year))
 
-################
-# Add ecoregion
-################
+##################################
+# Add ecoregion and aridity index
+##################################
 
-site_year_statistics_drought_filtered <- left_join(site_year_statistics_drought_filtered, select(phen_with_ecoregion_df, site, NA_L1CODE, NA_L1NAME), by=join_by(Phenocam==site))
+site_year_statistics_drought_filtered <- left_join(site_year_statistics_drought_filtered, select(phen_with_ecoregion_df, site, NA_L1CODE, NA_L1NAME, aridity_index), by=join_by(Phenocam==site))
+site_year_statistics_drought_filtered <- site_year_statistics_drought_filtered %>% mutate(aridity_label = case_when(aridity_index<0.03 ~ "Hyper Arid",
+                                                                                                                    aridity_index<0.2 ~ "Arid",
+                                                                                                                    aridity_index<0.5 ~ "Semi-Arid",
+                                                                                                                    aridity_index<0.65 ~ "Dry Sub-Humid",
+                                                                                                                    aridity_index>=0.65 ~ "Humid"))
 
 ######################################################
 # Calculate site numbers by primary veg type and year
@@ -163,7 +168,7 @@ temp_data <- site_year_statistics_drought_filtered %>% filter(Primary_Veg_Type==
 ######################
 
 # Peak GCC vs. Weighted Average DM
-facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM_with_D0,y=Peak_GCC)) +
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM_with_D0,y=Peak_GCC, color=aridity_index)) +
   geom_point() +
   geom_smooth(method = lm) +
   facet_wrap(~Primary_Veg_Type,ncol=2) +
@@ -179,7 +184,7 @@ facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg
 facet_peak
 
 # Yearly GCC Amplitude vs. Weighted Average DM
-facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM_with_D0,y=Amplitude_GCC_yearly)) +
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM_with_D0,y=Amplitude_GCC_yearly, color=aridity_label)) +
   geom_point() +
   geom_smooth(method = lm) +
   facet_wrap(~Primary_Veg_Type,ncol=2) +
@@ -216,6 +221,15 @@ facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg
   geom_smooth(method = lm) +
   facet_wrap(~Primary_Veg_Type,ncol=2) +
   ggtitle("SOS difference from mean vs. Weighted Average DM (including D0)")
+facet_peak
+
+# Plot by aridity index label
+# Yearly GCC Amplitude vs. Weighted Average DM
+facet_peak <- ggplot(data=temp_data, aes(x=Cumulative_DM_with_D0,y=Amplitude_GCC_yearly)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~aridity_label,ncol=2) +
+  ggtitle("Yearly GCC Amplitude vs. Weighted Average DM (including D0)")
 facet_peak
 
 ##############
@@ -276,6 +290,14 @@ facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg
   geom_smooth(method = lm) +
   facet_wrap(~Primary_Veg_Type,ncol=2) +
   ggtitle("Relative Yearly Cumulative GCC vs. Mean VPD Anomaly")
+facet_peak
+
+# SOS difference from mean vs. Mean VPD Anomaly
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Mean_VPD_Anomaly,y=SOS_25_difference_from_mean)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("SOS difference from mean vs. Mean VPD Anomaly")
 facet_peak
 
 ##############################
