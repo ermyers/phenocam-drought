@@ -39,29 +39,29 @@ rm(temp_df, filename)
 # Rename variables and remove invalid values
 spei_1month_df <- spei_1month_df %>%
   rename(SPEI_1month = values, Phenocam = site, Date = date) %>%
-  mutate(Date = as.Date(Date), Year=year(Date), DOY=yday(Date)) %>%
+  mutate(Date = as.Date(Date), Year=year(Date), Month=month(Date), DOY=yday(Date)) %>%
   mutate(SPEI_1month = replace(SPEI_1month, SPEI_1month==-9999, NA))
 
 spei_3month_df <- spei_3month_df %>%
   rename(SPEI_3month = values, Phenocam = site, Date = date) %>%
-  mutate(Date = as.Date(Date), Year=year(Date), DOY=yday(Date)) %>%
+  mutate(Date = as.Date(Date), Year=year(Date), Month=month(Date), DOY=yday(Date)) %>%
   mutate(SPEI_3month = replace(SPEI_3month, SPEI_3month==-9999, NA))
 
 spei_6month_df <- spei_6month_df %>%
   rename(SPEI_6month = values, Phenocam = site, Date = date) %>%
-  mutate(Date = as.Date(Date), Year=year(Date), DOY=yday(Date)) %>%
+  mutate(Date = as.Date(Date), Year=year(Date), Month=month(Date), DOY=yday(Date)) %>%
   mutate(SPEI_6month = replace(SPEI_6month, SPEI_6month==-9999, NA))
 
 spei_12month_df <- spei_12month_df %>%
   rename(SPEI_12month = values, Phenocam = site, Date = date) %>%
-  mutate(Date = as.Date(Date), Year=year(Date), DOY=yday(Date)) %>%
+  mutate(Date = as.Date(Date), Year=year(Date), Month=month(Date), DOY=yday(Date)) %>%
   mutate(SPEI_12month = replace(SPEI_12month, SPEI_12month==-9999, NA))
 
 # Join dataframes into one
-spei_df <- left_join(spei_1month_df,spei_3month_df, by=join_by(Phenocam,lat,lon,elev,Date,Year,DOY))
-spei_df <- left_join(spei_df,spei_6month_df, by=join_by(Phenocam,lat,lon,elev,Date,Year,DOY))
-spei_df <- left_join(spei_df,spei_12month_df, by=join_by(Phenocam,lat,lon,elev,Date,Year,DOY))
-spei_df <- select(spei_df, Phenocam, lat, lon, elev, Date, Year, DOY, SPEI_1month, SPEI_3month, SPEI_6month, SPEI_12month)
+spei_df <- left_join(spei_1month_df,spei_3month_df, by=join_by(Phenocam,lat,lon,elev,Date,Year,Month,DOY))
+spei_df <- left_join(spei_df,spei_6month_df, by=join_by(Phenocam,lat,lon,elev,Date,Year,Month,DOY))
+spei_df <- left_join(spei_df,spei_12month_df, by=join_by(Phenocam,lat,lon,elev,Date,Year,Month,DOY))
+spei_df <- select(spei_df, Phenocam, lat, lon, elev, Date, Year, Month, DOY, SPEI_1month, SPEI_3month, SPEI_6month, SPEI_12month)
 
 # Calculate mean, peak, and cumulative SPEI by site-year
 spei_statistics <- data.frame()
@@ -71,13 +71,27 @@ for (i in 1:nrow(unique_siteyears)){
   site <- unique_siteyears$Phenocam[i]
   year <- unique_siteyears$Year[i]
   print(paste("i = ",i,", site = ",site,", year = ",year,sep=""))
+  # entire calendar year
   temp_df <- filter(spei_df, Phenocam==site & Year==year)
+  # growing season (May-September)
+  temp_gs_df <- filter(temp_df, Month>=5, Month<=9)
+  # antecedent cooler season (October-February)
+  temp_cs_df <- rbind(filter(spei_df, Phenocam==site, Year==(year-1), Month>=10),
+                      filter(spei_df, Phenocam==site, Year==year, Month<=2))
   new_row <- data.frame("Phenocam" = site,
                         "Year" = year,
                         "Mean_SPEI_1month" = mean(temp_df$SPEI_1month, na.rm=TRUE),
                         "Mean_SPEI_3month" = mean(temp_df$SPEI_3month, na.rm=TRUE),
                         "Mean_SPEI_6month" = mean(temp_df$SPEI_6month, na.rm=TRUE),
                         "Mean_SPEI_12month" = mean(temp_df$SPEI_12month, na.rm=TRUE),
+                        "Mean_May_Sept_SPEI_1month" = mean(temp_gs_df$SPEI_1month, na.rm=TRUE),
+                        "Mean_May_Sept_SPEI_3month" = mean(temp_gs_df$SPEI_3month, na.rm=TRUE),
+                        "Mean_May_Sept_SPEI_6month" = mean(temp_gs_df$SPEI_6month, na.rm=TRUE),
+                        "Mean_May_Sept_SPEI_12month" = mean(temp_gs_df$SPEI_12month, na.rm=TRUE),
+                        "Mean_Oct_Feb_SPEI_1month" = mean(temp_cs_df$SPEI_1month, na.rm=TRUE),
+                        "Mean_Oct_Feb_SPEI_3month" = mean(temp_cs_df$SPEI_3month, na.rm=TRUE),
+                        "Mean_Oct_Feb_SPEI_6month" = mean(temp_cs_df$SPEI_6month, na.rm=TRUE),
+                        "Mean_Oct_Feb_SPEI_12month" = mean(temp_cs_df$SPEI_12month, na.rm=TRUE),
                         "Stdev_SPEI_1month" = sd(temp_df$SPEI_1month, na.rm=TRUE),
                         "Stdev_SPEI_3month" = sd(temp_df$SPEI_3month, na.rm=TRUE),
                         "Stdev_SPEI_6month" = sd(temp_df$SPEI_6month, na.rm=TRUE),
@@ -90,11 +104,15 @@ for (i in 1:nrow(unique_siteyears)){
                         "SPEI_Drought_Weeks_1month" = nrow(filter(temp_df, SPEI_1month<=-1)),
                         "SPEI_Drought_Weeks_3month" = nrow(filter(temp_df, SPEI_3month<=-1)),
                         "SPEI_Drought_Weeks_6month" = nrow(filter(temp_df, SPEI_6month<=-1)),
-                        "SPEI_Drought_Weeks_12month" = nrow(filter(temp_df, SPEI_12month<=-1)))
+                        "SPEI_Drought_Weeks_12month" = nrow(filter(temp_df, SPEI_12month<=-1)),
+                        "SPEI_May_Sept_Drought_Weeks_1month" = nrow(filter(temp_gs_df, SPEI_1month<=-1)),
+                        "SPEI_May_Sept_Drought_Weeks_3month" = nrow(filter(temp_gs_df, SPEI_3month<=-1)),
+                        "SPEI_May_Sept_Drought_Weeks_6month" = nrow(filter(temp_gs_df, SPEI_6month<=-1)),
+                        "SPEI_May_Sept_Drought_Weeks_12month" = nrow(filter(temp_gs_df, SPEI_12month<=-1)))
   spei_statistics <- rbind(spei_statistics, new_row)
 }
 
-rm(temp_df, unique_siteyears, i, site, year)
+rm(new_row, temp_df, temp_cs_df, temp_gs_df, unique_siteyears, i, site, year)
 
 # Remove years with <52 weeks of data from cumulative SPEI calculation
 spei_statistics <- spei_statistics %>%
@@ -102,6 +120,35 @@ spei_statistics <- spei_statistics %>%
   mutate(Cumulative_SPEI_3month=replace(Cumulative_SPEI_3month, Number_of_SPEI_Weeks<52, NA)) %>%
   mutate(Cumulative_SPEI_6month=replace(Cumulative_SPEI_6month, Number_of_SPEI_Weeks<52, NA)) %>%
   mutate(Cumulative_SPEI_12month=replace(Cumulative_SPEI_12month, Number_of_SPEI_Weeks<52, NA))
+
+# Calculate SPEI statistics for previous year
+spei_statistics <- cbind(spei_statistics,
+                         "Prev_Year_Mean_SPEI_1month" = NA,
+                         "Prev_Year_Mean_SPEI_3month" = NA,
+                         "Prev_Year_Mean_SPEI_6month" = NA,
+                         "Prev_Year_Mean_SPEI_12month" = NA,
+                         "Prev_Year_Mean_May_Sept_SPEI_1month" = NA,
+                         "Prev_Year_Mean_May_Sept_SPEI_3month" = NA,
+                         "Prev_Year_Mean_May_Sept_SPEI_6month" = NA,
+                         "Prev_Year_Mean_May_Sept_SPEI_12month" = NA)
+
+for (i in 1:nrow(spei_statistics)){
+  site <- spei_statistics$Phenocam[i]
+  year <- spei_statistics$Year[i]
+  prev_year_df <- filter(spei_statistics, Phenocam==site, Year==(year-1))
+  if(nrow(prev_year_df)==1){
+    spei_statistics$Prev_Year_Mean_SPEI_1month[i] <- prev_year_df$Mean_SPEI_1month
+    spei_statistics$Prev_Year_Mean_SPEI_3month[i] <- prev_year_df$Mean_SPEI_3month
+    spei_statistics$Prev_Year_Mean_SPEI_6month[i] <- prev_year_df$Mean_SPEI_6month
+    spei_statistics$Prev_Year_Mean_SPEI_12month[i] <- prev_year_df$Mean_SPEI_12month
+    spei_statistics$Prev_Year_Mean_May_Sept_SPEI_1month[i] <- prev_year_df$Mean_May_Sept_SPEI_1month
+    spei_statistics$Prev_Year_Mean_May_Sept_SPEI_3month[i] <- prev_year_df$Mean_May_Sept_SPEI_3month
+    spei_statistics$Prev_Year_Mean_May_Sept_SPEI_6month[i] <- prev_year_df$Mean_May_Sept_SPEI_6month
+    spei_statistics$Prev_Year_Mean_May_Sept_SPEI_12month[i] <- prev_year_df$Mean_May_Sept_SPEI_12month
+  }
+}
+
+rm(prev_year_df, i, site, year)
 
 # # Mean statistics
 # spei_summary <- data.frame()

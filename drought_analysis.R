@@ -26,7 +26,8 @@ library(lubridate)
 
 # Load data
 load("outputs/growing_seasons_phen_2016_to_2024_baseline_subtracted.RData")
-load("outputs/drought_statistics.RData")
+#load("outputs/drought_statistics.RData")
+load("outputs/usdm_statistics.RData")
 load("outputs/vpd_statistics.RData")
 load("outputs/spei_statistics.RData")
 load("outputs/phen_with_ecoregion.RData")
@@ -74,14 +75,17 @@ for (i in 1:nrow(primary_rois)){
 rm(i, phenocam, roi, veg_type)
 
 # For drought metrics, only need to filter by Phenocam
-drought_statistics_filtered <- filter(drought_statistics, Phenocam %in% primary_rois$Phenocam)
+#drought_statistics_filtered <- filter(drought_statistics, Phenocam %in% primary_rois$Phenocam)
 vpd_statistics_filtered <- filter(vpd_statistics, Phenocam %in% primary_rois$Phenocam)
 spei_statistics_filtered <- filter(spei_statistics, Phenocam %in% primary_rois$Phenocam)
-phen_usdm_modified_filtered <- filter(phen_usdm_modified, Phenocam %in% primary_rois$Phenocam)
+#phen_usdm_modified_filtered <- filter(phen_usdm_modified, Phenocam %in% primary_rois$Phenocam)
+usdm_statistics_filtered <- filter(usdm_statistics, Phenocam %in% primary_rois$Phenocam)
 
 # Remove unfiltered data
-rm(drought_statistics, growing_seasons_phen, growing_seasons_phen_ave,
-   phen_usdm_modified, site_year_statistics, spei_statistics, vpd_statistics)
+# rm(drought_statistics, growing_seasons_phen, growing_seasons_phen_ave,
+#    phen_usdm_modified, site_year_statistics, spei_statistics, vpd_statistics)
+rm(growing_seasons_phen, growing_seasons_phen_ave, site_year_statistics,
+   spei_statistics, usdm_statistics, vpd_statistics)
 
 # Add Primary_Veg_Type field to filtered dataframes
 # Primary_Veg_Type is the same as Veg_Type for most ROIs, but assigns a veg type to XX ROIs and a few other ROIs
@@ -98,29 +102,35 @@ site_year_statistics_filtered <- site_year_statistics_filtered %>% mutate(Peak_G
                                                                           Cumulative_GCC_yearly_percent_of_mean = (Cumulative_GCC_yearly-Cumulative_GCC_yearly_mean)/Cumulative_GCC_yearly_mean,
                                                                           SOS_25_difference_from_mean = as.numeric(SOS_25 - as.Date(paste(Year-1,"-12-31",sep="")))-SOS_25_mean)
 
-###########################################
-# Calculate drought statistics by site-year
-###########################################
+# ###########################################
+# # Calculate drought statistics by site-year
+# ###########################################
+# 
+# site_year_statistics_drought_filtered <- cbind(site_year_statistics_filtered,Cumulative_DM=NA, Cumulative_DM_with_D0=NA,Drought_Weeks=NA)
+# 
+# for(i in 1:nrow(site_year_statistics_drought_filtered)){
+#   phenocam <- site_year_statistics_drought_filtered$Phenocam[i]
+#   year <- site_year_statistics_drought_filtered$Year[i]
+#   temp_phen_usdm <- filter(phen_usdm_modified_filtered,Phenocam==phenocam,Year==year)
+#   cumulative_dm_with_d0 <- (nrow(filter(temp_phen_usdm,DM==0)) + 2*nrow(filter(temp_phen_usdm,DM==1)) +
+#     3*nrow(filter(temp_phen_usdm,DM==2)) + 4*nrow(filter(temp_phen_usdm,DM==3)) +
+#     5*nrow(filter(temp_phen_usdm,DM==4)))
+#   cumulative_dm_with_d0 <- cumulative_dm_with_d0/nrow(temp_phen_usdm)
+#   temp_phen_usdm <- filter(phen_usdm_modified_filtered,Phenocam==phenocam,Year==year,DM>=1)
+#   cumulative_dm <- sum(temp_phen_usdm$DM,na.rm=TRUE)
+#   drought_weeks <- nrow(temp_phen_usdm)
+#   site_year_statistics_drought_filtered$Cumulative_DM[i] <- cumulative_dm
+#   site_year_statistics_drought_filtered$Cumulative_DM_with_D0[i] <- cumulative_dm_with_d0
+#   site_year_statistics_drought_filtered$Drought_Weeks[i] <- drought_weeks
+# }
+# 
+# rm(i,phenocam,year,temp_phen_usdm,cumulative_dm,cumulative_dm_with_d0,drought_weeks)
 
-site_year_statistics_drought_filtered <- cbind(site_year_statistics_filtered,Cumulative_DM=NA, Cumulative_DM_with_D0=NA,Drought_Weeks=NA)
+######################
+# Add USDM statistics 
+######################
 
-for(i in 1:nrow(site_year_statistics_drought_filtered)){
-  phenocam <- site_year_statistics_drought_filtered$Phenocam[i]
-  year <- site_year_statistics_drought_filtered$Year[i]
-  temp_phen_usdm <- filter(phen_usdm_modified_filtered,Phenocam==phenocam,Year==year)
-  cumulative_dm_with_d0 <- (nrow(filter(temp_phen_usdm,DM==0)) + 2*nrow(filter(temp_phen_usdm,DM==1)) +
-    3*nrow(filter(temp_phen_usdm,DM==2)) + 4*nrow(filter(temp_phen_usdm,DM==3)) +
-    5*nrow(filter(temp_phen_usdm,DM==4)))
-  cumulative_dm_with_d0 <- cumulative_dm_with_d0/nrow(temp_phen_usdm)
-  temp_phen_usdm <- filter(phen_usdm_modified_filtered,Phenocam==phenocam,Year==year,DM>=1)
-  cumulative_dm <- sum(temp_phen_usdm$DM,na.rm=TRUE)
-  drought_weeks <- nrow(temp_phen_usdm)
-  site_year_statistics_drought_filtered$Cumulative_DM[i] <- cumulative_dm
-  site_year_statistics_drought_filtered$Cumulative_DM_with_D0[i] <- cumulative_dm_with_d0
-  site_year_statistics_drought_filtered$Drought_Weeks[i] <- drought_weeks
-}
-
-rm(i,phenocam,year,temp_phen_usdm,cumulative_dm,cumulative_dm_with_d0,drought_weeks)
+site_year_statistics_drought_filtered <- left_join(site_year_statistics_filtered, usdm_statistics_filtered, by=join_by(Phenocam,Year))
 
 #####################
 # Add VPD statistics 
@@ -152,31 +162,1887 @@ site_year_statistics_drought_filtered <- site_year_statistics_drought_filtered %
 site_numbers <- site_year_statistics_drought_filtered %>% count(Primary_Veg_Type,Year, sort=TRUE)
 veg_type_ecoregions <- site_year_statistics_drought_filtered %>% count(Primary_Veg_Type, NA_L1NAME)
 
+##########################################################
+# Filter by primary veg type for correlation and plotting
+##########################################################
+
+temp_data <- site_year_statistics_drought_filtered %>%
+  filter(Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH")
+
+#########################
+# Linear Model Summaries
+#########################
+
+# Results matrices
+veg_type_list <- c("AG","DB","EN","GR","SH")
+
+usdm_correlation_summaries <- data.frame()
+
+####################
+# Weighted Ave USDM
+####################
+
+###########################
+# USDM and peak GCC - start
+###########################
+
+# Peak GCC vs. Weighted Ave USDM (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Weighted_Ave_USDM",
+                        "Slope" = coef(summary(temp_model))["Weighted_Ave_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Weighted_Ave_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Weighted_Ave_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Weighted Ave USDM (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Weighted_Ave_May_Sept_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Weighted_Ave_May_Sept_USDM",
+                        "Slope" = coef(summary(temp_model))["Weighted_Ave_May_Sept_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Weighted_Ave_May_Sept_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Weighted_Ave_May_Sept_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Weighted Ave USDM (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Weighted_Ave_Oct_Feb_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Weighted_Ave_Oct_Feb_USDM",
+                        "Slope" = coef(summary(temp_model))["Weighted_Ave_Oct_Feb_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Weighted_Ave_Oct_Feb_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Weighted_Ave_Oct_Feb_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Weighted Ave USDM (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Prev_Year_Weighted_Ave_May_Sept_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Prev_Year_Weighted_Ave_May_Sept_USDM",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_May_Sept_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_May_Sept_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_May_Sept_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Weighted Ave USDM (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Prev_Year_Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Prev_Year_Weighted_Ave_USDM",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+#########################
+# USDM and peak GCC - end
+#########################
+
+################################
+# USDM and amplitude GCC - start
+################################
+
+# GCC Amplitude vs. Weighted Ave USDM (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Weighted_Ave_USDM",
+                        "Slope" = coef(summary(temp_model))["Weighted_Ave_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Weighted_Ave_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Weighted_Ave_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Weighted Ave USDM (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Weighted_Ave_May_Sept_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Weighted_Ave_May_Sept_USDM",
+                        "Slope" = coef(summary(temp_model))["Weighted_Ave_May_Sept_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Weighted_Ave_May_Sept_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Weighted_Ave_May_Sept_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Weighted Ave USDM (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Weighted_Ave_Oct_Feb_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Weighted_Ave_Oct_Feb_USDM",
+                        "Slope" = coef(summary(temp_model))["Weighted_Ave_Oct_Feb_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Weighted_Ave_Oct_Feb_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Weighted_Ave_Oct_Feb_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Weighted Ave USDM (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Prev_Year_Weighted_Ave_May_Sept_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Prev_Year_Weighted_Ave_May_Sept_USDM",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_May_Sept_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_May_Sept_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_May_Sept_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Weighted Ave USDM (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Prev_Year_Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Prev_Year_Weighted_Ave_USDM",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+##############################
+# USDM and amplitude GCC - end
+##############################
+
+#################################
+# USDM and cumulative GCC - start
+#################################
+
+# Cumulative GCC vs. Weighted Ave USDM (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Weighted_Ave_USDM",
+                        "Slope" = coef(summary(temp_model))["Weighted_Ave_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Weighted_Ave_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Weighted_Ave_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Weighted Ave USDM (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Weighted_Ave_May_Sept_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Weighted_Ave_May_Sept_USDM",
+                        "Slope" = coef(summary(temp_model))["Weighted_Ave_May_Sept_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Weighted_Ave_May_Sept_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Weighted_Ave_May_Sept_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Weighted Ave USDM (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Weighted_Ave_Oct_Feb_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Weighted_Ave_Oct_Feb_USDM",
+                        "Slope" = coef(summary(temp_model))["Weighted_Ave_Oct_Feb_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Weighted_Ave_Oct_Feb_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Weighted_Ave_Oct_Feb_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Weighted Ave USDM (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Prev_Year_Weighted_Ave_May_Sept_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Prev_Year_Weighted_Ave_May_Sept_USDM",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_May_Sept_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_May_Sept_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_May_Sept_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Weighted Ave USDM (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Prev_Year_Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Prev_Year_Weighted_Ave_USDM",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+###############################
+# USDM and cumulative GCC - end
+###############################
+
+##############################
+# USDM and SOS anomaly - start
+##############################
+
+# # SOS difference from mean vs. Weighted Ave USDM (Current year)
+# for (veg_type in veg_type_list){
+#   temp_model <- lm(SOS_25_difference_from_mean ~ Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+#   new_row <- data.frame("Veg_Type" = veg_type,
+#                         "Phen_Metric" = "SOS_25_difference_from_mean",
+#                         "Drought_Index" = "USDM",
+#                         "Drought_Metric" = "Weighted_Ave_USDM",
+#                         "Slope" = coef(summary(temp_model))["Weighted_Ave_USDM","Estimate"],
+#                         "Error" = coef(summary(temp_model))["Weighted_Ave_USDM","Std. Error"],
+#                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+#                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+#                         "P_Value" = coef(summary(temp_model))["Weighted_Ave_USDM","Pr(>|t|)"])
+#   usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+# }
+
+# SOS difference from mean vs. Weighted Ave USDM (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Weighted_Ave_May_Sept_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Weighted_Ave_May_Sept_USDM",
+                        "Slope" = coef(summary(temp_model))["Weighted_Ave_May_Sept_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Weighted_Ave_May_Sept_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Weighted_Ave_May_Sept_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Weighted Ave USDM (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Weighted_Ave_Oct_Feb_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Weighted_Ave_Oct_Feb_USDM",
+                        "Slope" = coef(summary(temp_model))["Weighted_Ave_Oct_Feb_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Weighted_Ave_Oct_Feb_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Weighted_Ave_Oct_Feb_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Weighted Ave USDM (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Prev_Year_Weighted_Ave_May_Sept_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Prev_Year_Weighted_Ave_May_Sept_USDM",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_May_Sept_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_May_Sept_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_May_Sept_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Weighted Ave USDM (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Prev_Year_Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Prev_Year_Weighted_Ave_USDM",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+############################
+# USDM and SOS anomaly - end
+############################
+
+######################
+# USDM and GSL - start
+######################
+
+# GSL difference from mean vs. Weighted Ave USDM (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Weighted_Ave_USDM",
+                        "Slope" = coef(summary(temp_model))["Weighted_Ave_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Weighted_Ave_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Weighted_Ave_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# GSL vs. Weighted Ave USDM (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Weighted_Ave_May_Sept_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Weighted_Ave_May_Sept_USDM",
+                        "Slope" = coef(summary(temp_model))["Weighted_Ave_May_Sept_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Weighted_Ave_May_Sept_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Weighted_Ave_May_Sept_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# GSL vs. Weighted Ave USDM (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Weighted_Ave_Oct_Feb_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Weighted_Ave_Oct_Feb_USDM",
+                        "Slope" = coef(summary(temp_model))["Weighted_Ave_Oct_Feb_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Weighted_Ave_Oct_Feb_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Weighted_Ave_Oct_Feb_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# GSL vs. Weighted Ave USDM (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Prev_Year_Weighted_Ave_May_Sept_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Prev_Year_Weighted_Ave_May_Sept_USDM",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_May_Sept_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_May_Sept_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_May_Sept_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+# GSL vs. Weighted Ave USDM (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Prev_Year_Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "USDM",
+                        "Drought_Metric" = "Prev_Year_Weighted_Ave_USDM",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_USDM","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_USDM","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Weighted_Ave_USDM","Pr(>|t|)"])
+  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+}
+
+####################
+# USDM and GSL - end
+####################
+
+# # Relative Yearly GCC Amplitude vs. Cumulative DM, including D0
+# for (veg_type in veg_type_list){
+#   temp_model <- lm(Amplitude_GCC_yearly_percent_of_mean ~ Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+#   new_row <- data.frame("Veg_Type" = veg_type,
+#                         "Phen_Metric" = "Amplitude_GCC_yearly_percent_of_mean",
+#                         "Drought_Index" = "USDM",
+#                         "Drought_Metric" = "Weighted_Average_DM",
+#                         "Slope" = coef(summary(temp_model))["Weighted_Ave_USDM","Estimate"],
+#                         "Error" = coef(summary(temp_model))["Weighted_Ave_USDM","Std. Error"],
+#                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+#                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+#                         "P_Value" = coef(summary(temp_model))["Weighted_Ave_USDM","Pr(>|t|)"])
+#   usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+# }
+# 
+# # Relative Yearly Cumulative GCC vs. Cumulative DM, including D0
+# for (veg_type in veg_type_list){
+#   temp_model <- lm(Cumulative_GCC_yearly_percent_of_mean ~ Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+#   new_row <- data.frame("Veg_Type" = veg_type,
+#                         "Phen_Metric" = "Cumulative_GCC_yearly_percent_of_mean",
+#                         "Drought_Index" = "USDM",
+#                         "Drought_Metric" = "Weighted_Average_DM",
+#                         "Slope" = coef(summary(temp_model))["Weighted_Ave_USDM","Estimate"],
+#                         "Error" = coef(summary(temp_model))["Weighted_Ave_USDM","Std. Error"],
+#                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+#                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+#                         "P_Value" = coef(summary(temp_model))["Weighted_Ave_USDM","Pr(>|t|)"])
+#   usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+# }
+
+######
+# VPD
+######
+
+vpd_correlation_summaries <- data.frame()
+
+##########################
+# VPD and peak GCC - start
+##########################
+
+# Peak GCC vs. Mean VPD Anomaly (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Mean_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Mean VPD Anomaly (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Mean_May_Sept_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Mean_May_Sept_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+########################
+# VPD and peak GCC - end
+########################
+
+###############################
+# VPD and amplitude GCC - start
+###############################
+
+# GCC Amplitude vs. Mean VPD Anomaly (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Mean_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Mean VPD Anomaly (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Mean_May_Sept_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Mean_May_Sept_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+#############################
+# VPD and amplitude GCC - end
+#############################
+
+################################
+# VPD and cumulative GCC - start
+################################
+
+# Cumulative GCC vs. Mean VPD Anomaly (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Mean_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Mean VPD Anomaly (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Mean_May_Sept_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Mean_May_Sept_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+##############################
+# VPD and cumulative GCC - end
+##############################
+
+#######
+# SPEI
+#######
+
+spei_correlation_summaries <- data.frame()
+
+###################################
+# 3-month SPEI and peak GCC - start
+###################################
+
+# Peak GCC vs. Mean SPEI 3-month (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Mean_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Mean_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Mean SPEI 3-month (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Mean_May_Sept_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_May_Sept_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Mean SPEI 3-month (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Mean_Oct_Feb_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_Oct_Feb_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Mean SPEI 3-month (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Prev_Year_Mean_May_Sept_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Mean SPEI 3-month (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Prev_Year_Mean_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+#################################
+# 3-month SPEI and peak GCC - end
+#################################
+
+###################################
+# 6-month SPEI and peak GCC - start
+###################################
+
+# Peak GCC vs. Mean SPEI 6-month (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Mean_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Mean_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Mean SPEI 6-month (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Mean_May_Sept_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_May_Sept_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Mean SPEI 6-month (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Mean_Oct_Feb_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_Oct_Feb_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Mean SPEI 6-month (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Prev_Year_Mean_May_Sept_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Mean SPEI 6-month (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Prev_Year_Mean_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+#################################
+# 6-month SPEI and peak GCC - end
+#################################
+
+####################################
+# 12-month SPEI and peak GCC - start
+####################################
+
+# Peak GCC vs. Mean SPEI 12-month (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Mean_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Mean_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Mean SPEI 12-month (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Mean_May_Sept_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_May_Sept_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Mean SPEI 12-month (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Mean_Oct_Feb_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_Oct_Feb_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Mean SPEI 12-month (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Prev_Year_Mean_May_Sept_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Mean SPEI 12-month (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Prev_Year_Mean_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+##################################
+# 12-month SPEI and peak GCC - end
+##################################
+
+########################################
+# 3-month SPEI and amplitude GCC - start
+########################################
+
+# GCC Amplitude vs. Mean SPEI 3-month (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Mean_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Mean_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Mean SPEI 3-month (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Mean_May_Sept_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_May_Sept_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Mean SPEI 3-month (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Mean_Oct_Feb_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_Oct_Feb_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Mean SPEI 3-month (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Prev_Year_Mean_May_Sept_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Mean SPEI 3-month (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Prev_Year_Mean_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+######################################
+# 3-month SPEI and amplitude GCC - end
+######################################
+
+########################################
+# 6-month SPEI and amplitude GCC - start
+########################################
+
+# GCC Amplitude vs. Mean SPEI 6-month (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Mean_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Mean_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Mean SPEI 6-month (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Mean_May_Sept_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_May_Sept_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Mean SPEI 6-month (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Mean_Oct_Feb_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_Oct_Feb_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Mean SPEI 6-month (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Prev_Year_Mean_May_Sept_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Mean SPEI 6-month (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Prev_Year_Mean_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+######################################
+# 6-month SPEI and amplitude GCC - end
+######################################
+
+#########################################
+# 12-month SPEI and amplitude GCC - start
+#########################################
+
+# GCC Amplitude vs. Mean SPEI 12-month (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Mean_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Mean_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Mean SPEI 12-month (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Mean_May_Sept_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_May_Sept_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Mean SPEI 12-month (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Mean_Oct_Feb_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_Oct_Feb_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Mean SPEI 12-month (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Prev_Year_Mean_May_Sept_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Mean SPEI 12-month (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Prev_Year_Mean_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+#######################################
+# 12-month SPEI and amplitude GCC - end
+#######################################
+
+#########################################
+# 3-month SPEI and cumulative GCC - start
+#########################################
+
+# Cumulative GCC vs. Mean SPEI 3-month (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Mean_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Mean_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Mean SPEI 3-month (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Mean_May_Sept_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_May_Sept_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Mean SPEI 3-month (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Mean_Oct_Feb_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_Oct_Feb_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Mean SPEI 3-month (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Prev_Year_Mean_May_Sept_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Mean SPEI 3-month (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Prev_Year_Mean_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+#######################################
+# 3-month SPEI and cumulative GCC - end
+#######################################
+
+#########################################
+# 6-month SPEI and cumulative GCC - start
+#########################################
+
+# Cumulative GCC vs. Mean SPEI 6-month (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Mean_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Mean_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Mean SPEI 6-month (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Mean_May_Sept_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_May_Sept_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Mean SPEI 6-month (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Mean_Oct_Feb_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_Oct_Feb_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Mean SPEI 6-month (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Prev_Year_Mean_May_Sept_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Mean SPEI 6-month (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Prev_Year_Mean_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+#######################################
+# 6-month SPEI and cumulative GCC - end
+#######################################
+
+##########################################
+# 12-month SPEI and cumulative GCC - start
+##########################################
+
+# Cumulative GCC vs. Mean SPEI 12-month (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Mean_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Mean_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Mean SPEI 12-month (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Mean_May_Sept_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_May_Sept_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Mean SPEI 12-month (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Mean_Oct_Feb_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_Oct_Feb_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Mean SPEI 12-month (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Prev_Year_Mean_May_Sept_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Mean SPEI 12-month (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Prev_Year_Mean_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+########################################
+# 12-month SPEI and cumulative GCC - end
+########################################
+
+######################################
+# 3-month SPEI and SOS anomaly - start
+######################################
+
+# SOS difference from mean vs. Mean SPEI 3-month (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Mean_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Mean_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Mean SPEI 3-month (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Mean_May_Sept_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_May_Sept_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Mean SPEI 3-month (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Mean_Oct_Feb_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_Oct_Feb_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Mean SPEI 3-month (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Prev_Year_Mean_May_Sept_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Mean SPEI 3-month (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Prev_Year_Mean_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+####################################
+# 3-month SPEI and SOS anomaly - end
+####################################
+
+######################################
+# 6-month SPEI and SOS anomaly - start
+######################################
+
+# SOS difference from mean vs. Mean SPEI 6-month (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Mean_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Mean_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Mean SPEI 6-month (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Mean_May_Sept_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_May_Sept_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Mean SPEI 6-month (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Mean_Oct_Feb_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_Oct_Feb_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Mean SPEI 6-month (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Prev_Year_Mean_May_Sept_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Mean SPEI 6-month (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Prev_Year_Mean_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+####################################
+# 6-month SPEI and SOS anomaly - end
+####################################
+
+#######################################
+# 12-month SPEI and SOS anomaly - start
+#######################################
+
+# SOS difference from mean vs. Mean SPEI 12-month (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Mean_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Mean_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Mean SPEI 12-month (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Mean_May_Sept_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_May_Sept_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Mean SPEI 12-month (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Mean_Oct_Feb_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_Oct_Feb_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Mean SPEI 12-month (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Prev_Year_Mean_May_Sept_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Mean SPEI 12-month (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Prev_Year_Mean_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+#####################################
+# 12-month SPEI and SOS anomaly - end
+#####################################
+
+##############################
+# 3-month SPEI and GSL - start
+##############################
+
+# GSL vs. Mean SPEI 3-month (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Mean_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Mean_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GSL vs. Mean SPEI 3-month (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Mean_May_Sept_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_May_Sept_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GSL vs. Mean SPEI 3-month (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Mean_Oct_Feb_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_Oct_Feb_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GSL vs. Mean SPEI 3-month (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Prev_Year_Mean_May_Sept_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GSL vs. Mean SPEI 3-month (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Prev_Year_Mean_SPEI_3month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_SPEI_3month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_3month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_3month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_3month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+############################
+# 3-month SPEI and GSL - end
+############################
+
+##############################
+# 6-month SPEI and GSL - start
+##############################
+
+# GSL vs. Mean SPEI 6-month (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Mean_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Mean_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GSL vs. Mean SPEI 6-month (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Mean_May_Sept_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_May_Sept_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GSL vs. Mean SPEI 6-month (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Mean_Oct_Feb_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_Oct_Feb_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GSL vs. Mean SPEI 6-month (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Prev_Year_Mean_May_Sept_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GSL vs. Mean SPEI 6-month (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Prev_Year_Mean_SPEI_6month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_SPEI_6month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_6month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_6month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_6month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+############################
+# 6-month SPEI and GSL - end
+############################
+
+###############################
+# 12-month SPEI and GSL - start
+###############################
+
+# GSL vs. Mean SPEI 12-month (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Mean_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Mean_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GSL vs. Mean SPEI 12-month (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Mean_May_Sept_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_May_Sept_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GSL vs. Mean SPEI 12-month (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Mean_Oct_Feb_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Mean_Oct_Feb_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GSL vs. Mean SPEI 12-month (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Prev_Year_Mean_May_Sept_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+# GSL vs. Mean SPEI 12-month (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Prev_Year_Mean_SPEI_12month, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "SPEI",
+                        "Drought_Metric" = "Prev_Year_Mean_SPEI_12month",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_12month","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_12month","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_SPEI_12month","Pr(>|t|)"])
+  spei_correlation_summaries <- rbind(spei_correlation_summaries, new_row)
+}
+
+#############################
+# 12-month SPEI and GSL - end
+#############################
+
+# Add column for significant results
+usdm_correlation_summaries <- usdm_correlation_summaries %>% mutate(significant = case_when(P_Value <= 0.05 ~ "yes"))
+vpd_correlation_summaries <- vpd_correlation_summaries %>% mutate(significant = case_when(P_Value <= 0.05 ~ "yes"))
+spei_correlation_summaries <- spei_correlation_summaries %>% mutate(significant = case_when(P_Value <= 0.05 ~ "yes"))
+
 ###################################################################
 # Scatter plots (Phenocam metrics vs. drought metrics by veg type)
 ###################################################################
 
-# # Temporary data for all plots
-# temp_data <- growing_seasons_phen_usdm_filtered %>%
-#   filter(Primary_Growing_Season=="yes") %>%
-#   mutate(GSL_25 = as.numeric(EOS_25-SOS_25), SOS_25_DOY = yday(SOS_25))
+######################
+# Weighted Average DM
+######################
 
-temp_data <- site_year_statistics_drought_filtered %>% filter(Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH")
+# Peak GCC vs. Weighted Average Yearly USDM
+facet_peak <- ggplot(data=temp_data, aes(x=Weighted_Ave_USDM,y=Peak_GCC)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Peak GCC vs. Weighted Average Yearly USDM")
+facet_peak
+
+# Cumulative GCC vs. Weighted Average Yearly USDM
+facet_peak <- ggplot(data=temp_data, aes(x=Weighted_Ave_USDM,y=Cumulative_GCC_yearly)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Cumulative Yearly GCC vs. Weighted Average USDM")
+facet_peak
+
+# OLD PLOTS
 
 ######################
 # Weighted Average DM
 ######################
 
 # Peak GCC vs. Weighted Average DM
-facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM_with_D0,y=Peak_GCC, color=aridity_index)) +
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Weighted_Ave_USDM,y=Peak_GCC, color=aridity_index)) +
   geom_point() +
   geom_smooth(method = lm) +
   facet_wrap(~Primary_Veg_Type,ncol=2) +
-  ggtitle("Peak GCC vs. Weighted Average DM (including D0)")
+  ggtitle("Peak GCC vs. Weighted Average DM")
 facet_peak
 
 # GSL vs. Weighted Average DM
-facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM_with_D0,y=GSL_25)) +
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Weighted_Ave_USDM,y=GSL_25)) +
   geom_point() +
   geom_smooth(method = lm) +
   facet_wrap(~Primary_Veg_Type,ncol=2) +
@@ -184,7 +2050,7 @@ facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg
 facet_peak
 
 # Yearly GCC Amplitude vs. Weighted Average DM
-facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM_with_D0,y=Amplitude_GCC_yearly, color=aridity_label)) +
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Weighted_Ave_USDM,y=Amplitude_GCC_yearly, color=aridity_label)) +
   geom_point() +
   geom_smooth(method = lm) +
   facet_wrap(~Primary_Veg_Type,ncol=2) +
@@ -192,7 +2058,7 @@ facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg
 facet_peak
 
 # Yearly GCC Amplitude as a % of mean amplitude vs. Weighted Average DM
-facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM_with_D0,y=Amplitude_GCC_yearly_percent_of_mean)) +
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Weighted_Ave_USDM,y=Amplitude_GCC_yearly_percent_of_mean)) +
   geom_point() +
   geom_smooth(method = lm) +
   facet_wrap(~Primary_Veg_Type,ncol=2) +
@@ -200,7 +2066,7 @@ facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg
 facet_peak
 
 # Cumulative Yearly GCC vs. Weighted Average DM
-facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM_with_D0,y=Cumulative_GCC_yearly)) +
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Weighted_Ave_USDM,y=Cumulative_GCC_yearly)) +
   geom_point() +
   geom_smooth(method = lm) +
   facet_wrap(~Primary_Veg_Type,ncol=2) +
@@ -208,7 +2074,7 @@ facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg
 facet_peak
 
 # Cumulative Yearly GCC as a % of mean cumulative GCC vs. Weighted Average DM
-facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM_with_D0,y=Cumulative_GCC_yearly_percent_of_mean)) +
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Weighted_Ave_USDM,y=Cumulative_GCC_yearly_percent_of_mean)) +
   geom_point() +
   geom_smooth(method = lm) +
   facet_wrap(~Primary_Veg_Type,ncol=2) +
@@ -216,7 +2082,7 @@ facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg
 facet_peak
 
 # SOS difference from mean vs. Weighted Average DM
-facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Cumulative_DM_with_D0,y=SOS_25_difference_from_mean)) +
+facet_peak <- ggplot(data=filter(temp_data, Primary_Veg_Type=="AG" | Primary_Veg_Type=="EN" | Primary_Veg_Type=="DB" | Primary_Veg_Type=="GR" | Primary_Veg_Type=="SH"), aes(x=Weighted_Ave_USDM,y=SOS_25_difference_from_mean)) +
   geom_point() +
   geom_smooth(method = lm) +
   facet_wrap(~Primary_Veg_Type,ncol=2) +
@@ -225,7 +2091,7 @@ facet_peak
 
 # Plot by aridity index label
 # Yearly GCC Amplitude vs. Weighted Average DM
-facet_peak <- ggplot(data=temp_data, aes(x=Cumulative_DM_with_D0,y=Amplitude_GCC_yearly)) +
+facet_peak <- ggplot(data=temp_data, aes(x=Weighted_Ave_USDM,y=Amplitude_GCC_yearly)) +
   geom_point() +
   geom_smooth(method = lm) +
   facet_wrap(~aridity_label,ncol=2) +
@@ -457,226 +2323,226 @@ facet_peak
 #   }
 # }
 
-# Results matrices
-veg_type_list <- c("AG","DB","EN","GR","SH")
+# # Results matrices
+# veg_type_list <- c("AG","DB","EN","GR","SH")
+# 
+# usdm_correlation_summaries <- data.frame()
+# vpd_correlation_summaries <- data.frame()
+# spei_correlation_summaries <- data.frame()
 
-usdm_correlation_summaries <- data.frame()
-vpd_correlation_summaries <- data.frame()
-spei_correlation_summaries <- data.frame()
+# # Cumulative DM
+# 
+# # Peak GCC vs. Cumulative DM, including D0
+# for (veg_type in veg_type_list){
+#   temp_model <- lm(Peak_GCC ~ Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+#   new_row <- data.frame("Veg_Type" = veg_type,
+#                         "Phen_Metric" = "Peak_GCC",
+#                         "Drought_Index" = "USDM",
+#                         "Drought_Metric" = "Weighted_Average_DM",
+#                         "Slope" = coef(summary(temp_model))["Weighted_Ave_USDM","Estimate"],
+#                         "Error" = coef(summary(temp_model))["Weighted_Ave_USDM","Std. Error"],
+#                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+#                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+#                         "P_Value" = coef(summary(temp_model))["Weighted_Ave_USDM","Pr(>|t|)"])
+#   usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+# }
+# 
+# # GSL vs. Cumulative DM, including D0
+# for (veg_type in veg_type_list){
+#   temp_model <- lm(GSL_25 ~ Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+#   new_row <- data.frame("Veg_Type" = veg_type,
+#                         "Phen_Metric" = "GSL_25",
+#                         "Drought_Index" = "USDM",
+#                         "Drought_Metric" = "Weighted_Average_DM",
+#                         "Slope" = coef(summary(temp_model))["Weighted_Ave_USDM","Estimate"],
+#                         "Error" = coef(summary(temp_model))["Weighted_Ave_USDM","Std. Error"],
+#                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+#                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+#                         "P_Value" = coef(summary(temp_model))["Weighted_Ave_USDM","Pr(>|t|)"])
+#   usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+# }
+# 
+# # Yearly GCC Amplitude vs. Cumulative DM, including D0
+# for (veg_type in veg_type_list){
+#   temp_model <- lm(Amplitude_GCC_yearly ~ Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+#   new_row <- data.frame("Veg_Type" = veg_type,
+#                         "Phen_Metric" = "Amplitude_GCC_yearly",
+#                         "Drought_Index" = "USDM",
+#                         "Drought_Metric" = "Weighted_Average_DM",
+#                         "Slope" = coef(summary(temp_model))["Weighted_Ave_USDM","Estimate"],
+#                         "Error" = coef(summary(temp_model))["Weighted_Ave_USDM","Std. Error"],
+#                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+#                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+#                         "P_Value" = coef(summary(temp_model))["Weighted_Ave_USDM","Pr(>|t|)"])
+#   usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+# }
+# 
+# # Cumulative Yearly GCC vs. Cumulative DM, including D0
+# for (veg_type in veg_type_list){
+#   temp_model <- lm(Cumulative_GCC_yearly ~ Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+#   new_row <- data.frame("Veg_Type" = veg_type,
+#                         "Phen_Metric" = "Cumulative_GCC_yearly",
+#                         "Drought_Index" = "USDM",
+#                         "Drought_Metric" = "Weighted_Average_DM",
+#                         "Slope" = coef(summary(temp_model))["Weighted_Ave_USDM","Estimate"],
+#                         "Error" = coef(summary(temp_model))["Weighted_Ave_USDM","Std. Error"],
+#                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+#                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+#                         "P_Value" = coef(summary(temp_model))["Weighted_Ave_USDM","Pr(>|t|)"])
+#   usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+# }
+# 
+# # SOS difference from mean vs. Cumulative DM, including D0
+# for (veg_type in veg_type_list){
+#   temp_model <- lm(SOS_25_difference_from_mean ~ Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+#   new_row <- data.frame("Veg_Type" = veg_type,
+#                         "Phen_Metric" = "SOS_25_difference_from_mean",
+#                         "Drought_Index" = "USDM",
+#                         "Drought_Metric" = "Weighted_Average_DM",
+#                         "Slope" = coef(summary(temp_model))["Weighted_Ave_USDM","Estimate"],
+#                         "Error" = coef(summary(temp_model))["Weighted_Ave_USDM","Std. Error"],
+#                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+#                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+#                         "P_Value" = coef(summary(temp_model))["Weighted_Ave_USDM","Pr(>|t|)"])
+#   usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+# }
+# 
+# # Relative Yearly GCC Amplitude vs. Cumulative DM, including D0
+# for (veg_type in veg_type_list){
+#   temp_model <- lm(Amplitude_GCC_yearly_percent_of_mean ~ Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+#   new_row <- data.frame("Veg_Type" = veg_type,
+#                         "Phen_Metric" = "Amplitude_GCC_yearly_percent_of_mean",
+#                         "Drought_Index" = "USDM",
+#                         "Drought_Metric" = "Weighted_Average_DM",
+#                         "Slope" = coef(summary(temp_model))["Weighted_Ave_USDM","Estimate"],
+#                         "Error" = coef(summary(temp_model))["Weighted_Ave_USDM","Std. Error"],
+#                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+#                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+#                         "P_Value" = coef(summary(temp_model))["Weighted_Ave_USDM","Pr(>|t|)"])
+#   usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+# }
+# 
+# # Relative Yearly Cumulative GCC vs. Cumulative DM, including D0
+# for (veg_type in veg_type_list){
+#   temp_model <- lm(Cumulative_GCC_yearly_percent_of_mean ~ Weighted_Ave_USDM, filter(temp_data, Primary_Veg_Type==veg_type))
+#   new_row <- data.frame("Veg_Type" = veg_type,
+#                         "Phen_Metric" = "Cumulative_GCC_yearly_percent_of_mean",
+#                         "Drought_Index" = "USDM",
+#                         "Drought_Metric" = "Weighted_Average_DM",
+#                         "Slope" = coef(summary(temp_model))["Weighted_Ave_USDM","Estimate"],
+#                         "Error" = coef(summary(temp_model))["Weighted_Ave_USDM","Std. Error"],
+#                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+#                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+#                         "P_Value" = coef(summary(temp_model))["Weighted_Ave_USDM","Pr(>|t|)"])
+#   usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
+# }
 
-# Cumulative DM
-
-# Peak GCC vs. Cumulative DM, including D0
-for (veg_type in veg_type_list){
-  temp_model <- lm(Peak_GCC ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type==veg_type))
-  new_row <- data.frame("Veg_Type" = veg_type,
-                        "Phen_Metric" = "Peak_GCC",
-                        "Drought_Index" = "USDM",
-                        "Drought_Metric" = "Weighted_Average_DM",
-                        "Slope" = coef(summary(temp_model))["Cumulative_DM_with_D0","Estimate"],
-                        "Error" = coef(summary(temp_model))["Cumulative_DM_with_D0","Std. Error"],
-                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
-                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
-                        "P_Value" = coef(summary(temp_model))["Cumulative_DM_with_D0","Pr(>|t|)"])
-  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
-}
-
-# GSL vs. Cumulative DM, including D0
-for (veg_type in veg_type_list){
-  temp_model <- lm(GSL_25 ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type==veg_type))
-  new_row <- data.frame("Veg_Type" = veg_type,
-                        "Phen_Metric" = "GSL_25",
-                        "Drought_Index" = "USDM",
-                        "Drought_Metric" = "Weighted_Average_DM",
-                        "Slope" = coef(summary(temp_model))["Cumulative_DM_with_D0","Estimate"],
-                        "Error" = coef(summary(temp_model))["Cumulative_DM_with_D0","Std. Error"],
-                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
-                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
-                        "P_Value" = coef(summary(temp_model))["Cumulative_DM_with_D0","Pr(>|t|)"])
-  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
-}
-
-# Yearly GCC Amplitude vs. Cumulative DM, including D0
-for (veg_type in veg_type_list){
-  temp_model <- lm(Amplitude_GCC_yearly ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type==veg_type))
-  new_row <- data.frame("Veg_Type" = veg_type,
-                        "Phen_Metric" = "Amplitude_GCC_yearly",
-                        "Drought_Index" = "USDM",
-                        "Drought_Metric" = "Weighted_Average_DM",
-                        "Slope" = coef(summary(temp_model))["Cumulative_DM_with_D0","Estimate"],
-                        "Error" = coef(summary(temp_model))["Cumulative_DM_with_D0","Std. Error"],
-                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
-                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
-                        "P_Value" = coef(summary(temp_model))["Cumulative_DM_with_D0","Pr(>|t|)"])
-  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
-}
-
-# Cumulative Yearly GCC vs. Cumulative DM, including D0
-for (veg_type in veg_type_list){
-  temp_model <- lm(Cumulative_GCC_yearly ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type==veg_type))
-  new_row <- data.frame("Veg_Type" = veg_type,
-                        "Phen_Metric" = "Cumulative_GCC_yearly",
-                        "Drought_Index" = "USDM",
-                        "Drought_Metric" = "Weighted_Average_DM",
-                        "Slope" = coef(summary(temp_model))["Cumulative_DM_with_D0","Estimate"],
-                        "Error" = coef(summary(temp_model))["Cumulative_DM_with_D0","Std. Error"],
-                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
-                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
-                        "P_Value" = coef(summary(temp_model))["Cumulative_DM_with_D0","Pr(>|t|)"])
-  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
-}
-
-# SOS difference from mean vs. Cumulative DM, including D0
-for (veg_type in veg_type_list){
-  temp_model <- lm(SOS_25_difference_from_mean ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type==veg_type))
-  new_row <- data.frame("Veg_Type" = veg_type,
-                        "Phen_Metric" = "SOS_25_difference_from_mean",
-                        "Drought_Index" = "USDM",
-                        "Drought_Metric" = "Weighted_Average_DM",
-                        "Slope" = coef(summary(temp_model))["Cumulative_DM_with_D0","Estimate"],
-                        "Error" = coef(summary(temp_model))["Cumulative_DM_with_D0","Std. Error"],
-                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
-                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
-                        "P_Value" = coef(summary(temp_model))["Cumulative_DM_with_D0","Pr(>|t|)"])
-  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
-}
-
-# Relative Yearly GCC Amplitude vs. Cumulative DM, including D0
-for (veg_type in veg_type_list){
-  temp_model <- lm(Amplitude_GCC_yearly_percent_of_mean ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type==veg_type))
-  new_row <- data.frame("Veg_Type" = veg_type,
-                        "Phen_Metric" = "Amplitude_GCC_yearly_percent_of_mean",
-                        "Drought_Index" = "USDM",
-                        "Drought_Metric" = "Weighted_Average_DM",
-                        "Slope" = coef(summary(temp_model))["Cumulative_DM_with_D0","Estimate"],
-                        "Error" = coef(summary(temp_model))["Cumulative_DM_with_D0","Std. Error"],
-                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
-                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
-                        "P_Value" = coef(summary(temp_model))["Cumulative_DM_with_D0","Pr(>|t|)"])
-  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
-}
-
-# Relative Yearly Cumulative GCC vs. Cumulative DM, including D0
-for (veg_type in veg_type_list){
-  temp_model <- lm(Cumulative_GCC_yearly_percent_of_mean ~ Cumulative_DM_with_D0, filter(temp_data, Primary_Veg_Type==veg_type))
-  new_row <- data.frame("Veg_Type" = veg_type,
-                        "Phen_Metric" = "Cumulative_GCC_yearly_percent_of_mean",
-                        "Drought_Index" = "USDM",
-                        "Drought_Metric" = "Weighted_Average_DM",
-                        "Slope" = coef(summary(temp_model))["Cumulative_DM_with_D0","Estimate"],
-                        "Error" = coef(summary(temp_model))["Cumulative_DM_with_D0","Std. Error"],
-                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
-                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
-                        "P_Value" = coef(summary(temp_model))["Cumulative_DM_with_D0","Pr(>|t|)"])
-  usdm_correlation_summaries <- rbind(usdm_correlation_summaries, new_row)
-}
-
-# Mean VPD Anomaly
-
-# Peak GCC vs. Mean VPD Anomaly
-for (veg_type in veg_type_list){
-  temp_model <- lm(Peak_GCC ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
-  new_row <- data.frame("Veg_Type" = veg_type,
-                        "Phen_Metric" = "Peak_GCC",
-                        "Drought_Index" = "VPD",
-                        "Drought_Metric" = "Mean_VPD_Anomaly",
-                        "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
-                        "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
-                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
-                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
-                        "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
-  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
-}
-
-# GSL vs. Mean VPD Anomaly
-for (veg_type in veg_type_list){
-  temp_model <- lm(GSL_25 ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
-  new_row <- data.frame("Veg_Type" = veg_type,
-                        "Phen_Metric" = "GSL_25",
-                        "Drought_Index" = "VPD",
-                        "Drought_Metric" = "Mean_VPD_Anomaly",
-                        "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
-                        "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
-                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
-                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
-                        "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
-  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
-}
-
-# Yearly GCC Amplitude vs. Mean VPD Anomaly
-for (veg_type in veg_type_list){
-  temp_model <- lm(Amplitude_GCC_yearly ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
-  new_row <- data.frame("Veg_Type" = veg_type,
-                        "Phen_Metric" = "Amplitude_GCC_Yearly",
-                        "Drought_Index" = "VPD",
-                        "Drought_Metric" = "Mean_VPD_Anomaly",
-                        "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
-                        "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
-                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
-                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
-                        "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
-  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
-}
-
-# Cumulative Yearly GCC vs. Mean VPD Anomaly
-for (veg_type in veg_type_list){
-  temp_model <- lm(Cumulative_GCC_yearly ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
-  new_row <- data.frame("Veg_Type" = veg_type,
-                        "Phen_Metric" = "Cumulative_GCC_Yearly",
-                        "Drought_Index" = "VPD",
-                        "Drought_Metric" = "Mean_VPD_Anomaly",
-                        "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
-                        "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
-                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
-                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
-                        "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
-  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
-}
-
-# SOS difference from mean vs. Mean VPD Anomaly
-for (veg_type in veg_type_list){
-  temp_model <- lm(SOS_25_difference_from_mean ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
-  new_row <- data.frame("Veg_Type" = veg_type,
-                        "Phen_Metric" = "SOS_25_difference_from_mean",
-                        "Drought_Index" = "VPD",
-                        "Drought_Metric" = "Mean_VPD_Anomaly",
-                        "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
-                        "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
-                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
-                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
-                        "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
-  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
-}
-
-# Relative Yearly GCC Amplitude vs. Mean VPD Anomaly
-for (veg_type in veg_type_list){
-  temp_model <- lm(Amplitude_GCC_yearly_percent_of_mean ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
-  new_row <- data.frame("Veg_Type" = veg_type,
-                        "Phen_Metric" = "Amplitude_GCC_Yearly_percent_of_mean",
-                        "Drought_Index" = "VPD",
-                        "Drought_Metric" = "Mean_VPD_Anomaly",
-                        "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
-                        "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
-                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
-                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
-                        "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
-  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
-}
-
-# Relative Yearly Cumulative GCC vs. Mean VPD Anomaly
-for (veg_type in veg_type_list){
-  temp_model <- lm(Cumulative_GCC_yearly_percent_of_mean ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
-  new_row <- data.frame("Veg_Type" = veg_type,
-                        "Phen_Metric" = "Cumulative_GCC_Yearly_percent_of_mean",
-                        "Drought_Index" = "VPD",
-                        "Drought_Metric" = "Mean_VPD_Anomaly",
-                        "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
-                        "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
-                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
-                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
-                        "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
-  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
-}
+# # Mean VPD Anomaly
+# 
+# # Peak GCC vs. Mean VPD Anomaly
+# for (veg_type in veg_type_list){
+#   temp_model <- lm(Peak_GCC ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+#   new_row <- data.frame("Veg_Type" = veg_type,
+#                         "Phen_Metric" = "Peak_GCC",
+#                         "Drought_Index" = "VPD",
+#                         "Drought_Metric" = "Mean_VPD_Anomaly",
+#                         "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
+#                         "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
+#                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+#                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+#                         "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
+#   vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+# }
+# 
+# # GSL vs. Mean VPD Anomaly
+# for (veg_type in veg_type_list){
+#   temp_model <- lm(GSL_25 ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+#   new_row <- data.frame("Veg_Type" = veg_type,
+#                         "Phen_Metric" = "GSL_25",
+#                         "Drought_Index" = "VPD",
+#                         "Drought_Metric" = "Mean_VPD_Anomaly",
+#                         "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
+#                         "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
+#                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+#                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+#                         "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
+#   vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+# }
+# 
+# # Yearly GCC Amplitude vs. Mean VPD Anomaly
+# for (veg_type in veg_type_list){
+#   temp_model <- lm(Amplitude_GCC_yearly ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+#   new_row <- data.frame("Veg_Type" = veg_type,
+#                         "Phen_Metric" = "Amplitude_GCC_Yearly",
+#                         "Drought_Index" = "VPD",
+#                         "Drought_Metric" = "Mean_VPD_Anomaly",
+#                         "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
+#                         "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
+#                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+#                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+#                         "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
+#   vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+# }
+# 
+# # Cumulative Yearly GCC vs. Mean VPD Anomaly
+# for (veg_type in veg_type_list){
+#   temp_model <- lm(Cumulative_GCC_yearly ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+#   new_row <- data.frame("Veg_Type" = veg_type,
+#                         "Phen_Metric" = "Cumulative_GCC_Yearly",
+#                         "Drought_Index" = "VPD",
+#                         "Drought_Metric" = "Mean_VPD_Anomaly",
+#                         "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
+#                         "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
+#                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+#                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+#                         "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
+#   vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+# }
+# 
+# # SOS difference from mean vs. Mean VPD Anomaly
+# for (veg_type in veg_type_list){
+#   temp_model <- lm(SOS_25_difference_from_mean ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+#   new_row <- data.frame("Veg_Type" = veg_type,
+#                         "Phen_Metric" = "SOS_25_difference_from_mean",
+#                         "Drought_Index" = "VPD",
+#                         "Drought_Metric" = "Mean_VPD_Anomaly",
+#                         "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
+#                         "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
+#                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+#                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+#                         "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
+#   vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+# }
+# 
+# # Relative Yearly GCC Amplitude vs. Mean VPD Anomaly
+# for (veg_type in veg_type_list){
+#   temp_model <- lm(Amplitude_GCC_yearly_percent_of_mean ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+#   new_row <- data.frame("Veg_Type" = veg_type,
+#                         "Phen_Metric" = "Amplitude_GCC_Yearly_percent_of_mean",
+#                         "Drought_Index" = "VPD",
+#                         "Drought_Metric" = "Mean_VPD_Anomaly",
+#                         "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
+#                         "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
+#                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+#                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+#                         "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
+#   vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+# }
+# 
+# # Relative Yearly Cumulative GCC vs. Mean VPD Anomaly
+# for (veg_type in veg_type_list){
+#   temp_model <- lm(Cumulative_GCC_yearly_percent_of_mean ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+#   new_row <- data.frame("Veg_Type" = veg_type,
+#                         "Phen_Metric" = "Cumulative_GCC_Yearly_percent_of_mean",
+#                         "Drought_Index" = "VPD",
+#                         "Drought_Metric" = "Mean_VPD_Anomaly",
+#                         "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
+#                         "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
+#                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+#                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+#                         "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
+#   vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+# }
 
 # Mean SPEI (multiple time scales)
 
@@ -1092,14 +2958,18 @@ drought_statistics_vect <- vect(drought_statistics_df, geom=c("x", "y"), crs=crs
 site_year_vect <- terra::intersect(site_year_vect,project(usa_states_vect,crs(site_year_vect)))
 drought_statistics_vect <- terra::intersect(drought_statistics_vect,project(usa_states_vect,crs(drought_statistics_vect)))
 
-# Plot droughts longer than 78 weeks
+# Plot droughts longer than 104 weeks
 p1 <- ggplot() +
   geom_sf(data = sf::st_as_sf(usa_states_vect)) +
-  geom_sf(data = sf::st_as_sf(drought_statistics_vect[drought_statistics_vect$Number_Weeks>=78,]), aes(color=Number_Weeks)) +
+  geom_sf(data = sf::st_as_sf(drought_statistics_vect[drought_statistics_vect$Number_Weeks>=104,]), aes(color=Number_Weeks)) +
   labs(color = "Number of Weeks in Drought") +
   scale_color_viridis_c(option = 'viridis') +
-  ggtitle("Longest droughts (>=78 weeks) at phenocam locations")
+  ggtitle("Longest droughts (>=104 weeks) at phenocam locations")
 p1
+
+# Plot droughts longer than 104 weeks with buffered area
+p1 <- ggplot() +
+  geom_sf(data=)
 
 # Plot droughts with >150 cumulative severity
 p2 <- ggplot() +
@@ -1116,7 +2986,7 @@ p1/p2
 # 2016
 p1 <- ggplot() +
   geom_sf(data = sf::st_as_sf(usa_states_vect)) +
-  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2016,]), aes(color=Cumulative_DM_with_D0)) +
+  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2016,]), aes(color=Weighted_Ave_USDM)) +
   labs(color = 'Weighted Average DM') +
   scale_color_viridis_c(option = 'viridis') +
   expand_limits(colour = seq(0, 5, by = 1)) +
@@ -1132,7 +3002,7 @@ p1 / p2
 # 2017
 p1 <- ggplot() +
   geom_sf(data = sf::st_as_sf(usa_states_vect)) +
-  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2017,]), aes(color=Cumulative_DM_with_D0)) +
+  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2017,]), aes(color=Weighted_Ave_USDM)) +
   labs(color = 'Weighted Average DM') +
   scale_color_viridis_c(option = 'viridis') +
   expand_limits(colour = seq(0, 5, by = 1)) +
@@ -1148,7 +3018,7 @@ p1 / p2
 # 2018
 p1 <- ggplot() +
   geom_sf(data = sf::st_as_sf(usa_states_vect)) +
-  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2018,]), aes(color=Cumulative_DM_with_D0)) +
+  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2018,]), aes(color=Weighted_Ave_USDM)) +
   labs(color = 'Weighted Average DM') +
   scale_color_viridis_c(option = 'viridis') +
   expand_limits(colour = seq(0, 5, by = 1)) +
@@ -1164,7 +3034,7 @@ p1 / p2
 # 2019
 p1 <- ggplot() +
   geom_sf(data = sf::st_as_sf(usa_states_vect)) +
-  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2019,]), aes(color=Cumulative_DM_with_D0)) +
+  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2019,]), aes(color=Weighted_Ave_USDM)) +
   labs(color = 'Weighted Average DM') +
   scale_color_viridis_c(option = 'viridis') +
   expand_limits(colour = seq(0, 5, by = 1)) +
@@ -1180,7 +3050,7 @@ p1 / p2
 # 2020
 p1 <- ggplot() +
   geom_sf(data = sf::st_as_sf(usa_states_vect)) +
-  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2020,]), aes(color=Cumulative_DM_with_D0)) +
+  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2020,]), aes(color=Weighted_Ave_USDM)) +
   labs(color = 'Weighted Average DM') +
   scale_color_viridis_c(option = 'viridis') +
   expand_limits(colour = seq(0, 5, by = 1)) +
@@ -1196,7 +3066,7 @@ p1 / p2
 # 2021
 p1 <- ggplot() +
   geom_sf(data = sf::st_as_sf(usa_states_vect)) +
-  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2021,]), aes(color=Cumulative_DM_with_D0)) +
+  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2021,]), aes(color=Weighted_Ave_USDM)) +
   labs(color = 'Weighted Average DM') +
   scale_color_viridis_c(option = 'viridis') +
   expand_limits(colour = seq(0, 5, by = 1)) +
@@ -1212,7 +3082,7 @@ p1 / p2
 # 2022
 p1 <- ggplot() +
   geom_sf(data = sf::st_as_sf(usa_states_vect)) +
-  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2022,]), aes(color=Cumulative_DM_with_D0)) +
+  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2022,]), aes(color=Weighted_Ave_USDM)) +
   labs(color = 'Weighted Average DM') +
   scale_color_viridis_c(option = 'viridis') +
   expand_limits(colour = seq(0, 5, by = 1)) +
@@ -1228,7 +3098,7 @@ p1 / p2
 # 2023
 p1 <- ggplot() +
   geom_sf(data = sf::st_as_sf(usa_states_vect)) +
-  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2023,]), aes(color=Cumulative_DM_with_D0)) +
+  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2023,]), aes(color=Weighted_Ave_USDM)) +
   labs(color = 'Weighted Average DM') +
   scale_color_viridis_c(option = 'viridis') +
   expand_limits(colour = seq(0, 5, by = 1)) +
@@ -1244,7 +3114,7 @@ p1 / p2
 # 2024
 p1 <- ggplot() +
   geom_sf(data = sf::st_as_sf(usa_states_vect)) +
-  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2024,]), aes(color=Cumulative_DM_with_D0)) +
+  geom_sf(data = sf::st_as_sf(site_year_vect[site_year_vect$Year==2024,]), aes(color=Weighted_Ave_USDM)) +
   labs(color = 'Weighted Average DM') +
   scale_color_viridis_c(option = 'viridis') +
   expand_limits(colour = seq(0, 5, by = 1)) +
