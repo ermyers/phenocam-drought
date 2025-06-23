@@ -47,11 +47,13 @@ The global aridity index tif is too large for github and needs to be downloaded 
 **calculate_phenometrics_baseline_subtracted.R** calculates start of season (SOS), timing and value of peak GCC (actual peak and baseline-subtracted peak values are both recorded), and end of season (EOS) for each valid growing season for each site and year of PhenoCam data. SOS and EOS are calculated at multiple thresholds (15%, 25%, and 50% of the peak amplitude), and it is possible for sites to have no valid growing seasons or more than 1 valid growing season in a given year. In addition, yearly metrics like maximum GCC amplitude and cumulative GCC are calculated for all site-years, regardless of number of growing seasons. Outputs are saved as outputs/growing_seasons_phen.RData (all years of available PhenoCam data) and outputs/growing_seasons_phen_2016_to_2024.RData (data collected between 2016 and 2024).
 
 ### Calculate drought metrics
-**calculate_vpd_anomaly.R** calculates the mean and cumulative VPD values for each site-year of PhenoCam data, and calculates the VPD anomalies per site-year as the difference between the mean for that year and the mean across all years for that site. Outputs are saved as outputs/vpd_statistics.RData.
+**calculate_usdm_statistics.R** calculates the weighted mean USDM values for each site-year of PhenoCam data. Outputs are saved as outputs/usdm_statistics.RData.
 
-**calculate_spei_anomaly.R** calculates the mean SPEI values for each site-year of PhenoCam data, and saves them in outputs/spei_statistics.RData.
+**calculate_vpd_statistics.R** calculates the mean and cumulative VPD values for each site-year of PhenoCam data, and calculates the VPD anomalies per site-year as the difference between the mean for that year and the mean across all years for that site. Outputs are saved as outputs/vpd_statistics.RData.
 
-**calculate_drought_statistics.R** calculates the start, end, number of weeks, and cumulative severity of continuous droughts (USDM >= 1) at PhenoCam sites. Outputs are saved in outputs/drought_statistics.RData.
+**calculate_spei_statistics.R** calculates the mean SPEI values for each site-year of PhenoCam data, and saves them in outputs/spei_statistics.RData.
+
+**calculate_drought_period_statistics.R** calculates the start, end, number of weeks, and cumulative severity of continuous droughts (USDM >= 1) at PhenoCam sites. Outputs are saved in outputs/drought_statistics.RData.
 
 ## Analysis
 
