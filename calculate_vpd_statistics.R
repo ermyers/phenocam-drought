@@ -27,19 +27,25 @@ for (i in 1:nrow(unique_siteyears)){
   site <- unique_siteyears$Phenocam[i]
   year <- unique_siteyears$Year[i]
   print(paste("i = ",i,", site = ",site,", year = ",year,sep=""))
+  # calendar year
   temp_df <- filter(vpd_df, Phenocam==site & Year==year)
+  # growing season
   temp_gs_df <- filter(temp_df, Month>=5, Month<=9)
+  # antecedent cooler season
+  temp_cs_df <- rbind(filter(vpd_df, Phenocam==site, Year==(year-1), Month>=10),
+                      filter(vpd_df, Phenocam==site, Year==year, Month<=2))
   new_row <- data.frame("Phenocam" = site,
                         "Year" = year,
                         "Max_VPD" = max(temp_df$VPD, na.rm=TRUE),
                         "Mean_VPD" = mean(temp_df$VPD, na.rm=TRUE),
                         "Mean_May_Sept_VPD" = mean(temp_gs_df$VPD, na.rm=TRUE),
+                        "Mean_Oct_Feb_VPD" = mean(temp_cs_df$VPD, na.rm=TRUE),
                         "Cumulative_VPD" = sum(temp_df$VPD, na.rm=TRUE),
                         "Number_of_Days" = nrow(temp_df))
   vpd_statistics <- rbind(vpd_statistics, new_row)
 }
 
-rm(new_row, temp_df, temp_gs_df, unique_siteyears, i, site, year)
+rm(new_row, temp_df, temp_cs_df, temp_gs_df, unique_siteyears, i, site, year)
 
 # Remove years with <365 days of data from cumulative VPD calculation
 vpd_statistics <- vpd_statistics %>% mutate(Cumulative_VPD=replace(Cumulative_VPD, Number_of_Days<365, NA))
@@ -54,6 +60,7 @@ for (i in 1:nrow(distinct(vpd_statistics, Phenocam))){
                         "Average_Max_VPD" = mean(temp_df$Max_VPD, na.rm=TRUE),
                         "Average_Mean_VPD" = mean(temp_df$Mean_VPD, na.rm=TRUE),
                         "Average_Mean_May_Sept_VPD" = mean(temp_df$Mean_May_Sept_VPD, na.rm=TRUE),
+                        "Average_Mean_Oct_Feb_VPD" = mean(temp_df$Mean_Oct_Feb_VPD, na.rm=TRUE),
                         "Average_Cumulative_VPD" = mean(temp_df$Cumulative_VPD, na.rm=TRUE))
   vpd_summary <- rbind(vpd_summary, new_row)
 }
@@ -67,7 +74,25 @@ vpd_statistics <- mutate(vpd_statistics,
                          Max_VPD_Anomaly = Max_VPD-Average_Max_VPD,
                          Mean_VPD_Anomaly = Mean_VPD-Average_Mean_VPD,
                          Mean_May_Sept_VPD_Anomaly = Mean_May_Sept_VPD-Average_Mean_May_Sept_VPD,
+                         Mean_Oct_Feb_VPD_Anomaly = Mean_Oct_Feb_VPD-Average_Mean_Oct_Feb_VPD,
                          Cumulative_VPD_Anomaly = Cumulative_VPD-Average_Cumulative_VPD)
+
+# Calculate VPD anomalies for previous year
+vpd_statistics <- cbind(vpd_statistics,
+                        "Prev_Year_Mean_VPD_Anomaly" = NA,
+                        "Prev_Year_Mean_May_Sept_VPD_Anomaly" = NA)
+
+for (i in 1:nrow(vpd_statistics)){
+  site <- vpd_statistics$Phenocam[i]
+  year <- vpd_statistics$Year[i]
+  prev_year_df <- filter(vpd_statistics, Phenocam==site, Year==(year-1))
+  if(nrow(prev_year_df)==1){
+    vpd_statistics$Prev_Year_Mean_VPD_Anomaly[i] <- prev_year_df$Mean_VPD_Anomaly
+    vpd_statistics$Prev_Year_Mean_May_Sept_VPD_Anomaly[i] <- prev_year_df$Mean_May_Sept_VPD_Anomaly
+  }
+}
+
+rm(prev_year_df, i, site, year)
 
 # Save results
 save(vpd_statistics, file="outputs/vpd_statistics.RData")

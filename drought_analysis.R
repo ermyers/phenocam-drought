@@ -672,6 +672,51 @@ for (veg_type in veg_type_list){
   vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
 }
 
+# Peak GCC vs. Mean VPD Anomaly (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Mean_Oct_Feb_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Mean_Oct_Feb_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Mean VPD Anomaly (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Prev_Year_Mean_May_Sept_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# Peak GCC vs. Mean VPD Anomaly (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Peak_GCC ~ Prev_Year_Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Peak_GCC",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Prev_Year_Mean_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
 ########################
 # VPD and peak GCC - end
 ########################
@@ -707,6 +752,51 @@ for (veg_type in veg_type_list){
                         "Adjusted_R2" = summary(temp_model)$adj.r.squared,
                         "F_Statistic" = summary(temp_model)$fstatistic[[1]],
                         "P_Value" = coef(summary(temp_model))["Mean_May_Sept_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Mean VPD Anomaly (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Mean_Oct_Feb_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Mean_Oct_Feb_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Mean VPD Anomaly (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Prev_Year_Mean_May_Sept_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# GCC Amplitude vs. Mean VPD Anomaly (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Amplitude_GCC_yearly ~ Prev_Year_Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Amplitude_GCC_yearly",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Prev_Year_Mean_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_VPD_Anomaly","Pr(>|t|)"])
   vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
 }
 
@@ -748,9 +838,220 @@ for (veg_type in veg_type_list){
   vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
 }
 
+# Cumulative GCC vs. Mean VPD Anomaly (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Mean_Oct_Feb_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Mean_Oct_Feb_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Mean VPD Anomaly (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Prev_Year_Mean_May_Sept_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# Cumulative GCC vs. Mean VPD Anomaly (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(Cumulative_GCC_yearly ~ Prev_Year_Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "Cumulative_GCC_yearly",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Prev_Year_Mean_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
 ##############################
 # VPD and cumulative GCC - end
 ##############################
+
+#############################
+# VPD and SOS anomaly - start
+#############################
+
+# SOS difference from mean vs. Mean VPD Anomaly (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Mean_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Mean VPD Anomaly (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Mean_May_Sept_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Mean_May_Sept_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Mean VPD Anomaly (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Mean_Oct_Feb_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Mean_Oct_Feb_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Mean VPD Anomaly (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Prev_Year_Mean_May_Sept_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# SOS difference from mean vs. Mean VPD Anomaly (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(SOS_25_difference_from_mean ~ Prev_Year_Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "SOS_25_difference_from_mean",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Prev_Year_Mean_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+###########################
+# VPD and SOS anomaly - end
+###########################
+
+#####################
+# VPD and GSL - start
+#####################
+
+# GSL vs. Mean VPD Anomaly (Current year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Mean_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Mean_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# GSL vs. Mean VPD Anomaly (Current year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Mean_May_Sept_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Mean_May_Sept_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Mean_May_Sept_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_May_Sept_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_May_Sept_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# GSL vs. Mean VPD Anomaly (Antecedent cooler season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Mean_Oct_Feb_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Mean_Oct_Feb_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Mean_Oct_Feb_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Mean_Oct_Feb_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Mean_Oct_Feb_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# GSL vs. Mean VPD Anomaly (Prev year growing season)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Prev_Year_Mean_May_Sept_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Prev_Year_Mean_May_Sept_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_May_Sept_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+# GSL vs. Mean VPD Anomaly (Prev year)
+for (veg_type in veg_type_list){
+  temp_model <- lm(GSL_25 ~ Prev_Year_Mean_VPD_Anomaly, filter(temp_data, Primary_Veg_Type==veg_type))
+  new_row <- data.frame("Veg_Type" = veg_type,
+                        "Phen_Metric" = "GSL_25",
+                        "Drought_Index" = "VPD",
+                        "Drought_Metric" = "Prev_Year_Mean_VPD_Anomaly",
+                        "Slope" = coef(summary(temp_model))["Prev_Year_Mean_VPD_Anomaly","Estimate"],
+                        "Error" = coef(summary(temp_model))["Prev_Year_Mean_VPD_Anomaly","Std. Error"],
+                        "Adjusted_R2" = summary(temp_model)$adj.r.squared,
+                        "F_Statistic" = summary(temp_model)$fstatistic[[1]],
+                        "P_Value" = coef(summary(temp_model))["Prev_Year_Mean_VPD_Anomaly","Pr(>|t|)"])
+  vpd_correlation_summaries <- rbind(vpd_correlation_summaries, new_row)
+}
+
+###################
+# VPD and GSL - end
+###################
 
 #######
 # SPEI
