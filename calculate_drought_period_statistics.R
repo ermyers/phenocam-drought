@@ -1,4 +1,4 @@
-# Calculate drought statistics
+# Calculate drought period statistics
 
 library(tidyverse)
 library(patchwork)
@@ -136,7 +136,195 @@ ggplot(data = filter(drought_statistics, Sum_USDM>0), aes(x=Number_Weeks)) + geo
 ggplot(data = filter(drought_statistics, Sum_USDM>0), aes(x=Sum_USDM)) + geom_histogram(binwidth=1)
 ggplot(data = filter(drought_statistics, Sum_USDM>0), aes(x=Sum_USDM, y=Number_Weeks)) + geom_point()
 
-# Optional - save outputs
+
+
+###########
+# For SPEI
+###########
+
+spei_1month_df <- data.frame()
+spei_3month_df <- data.frame()
+spei_6month_df <- data.frame()
+spei_12month_df <- data.frame()
+
+# Read in SPEI data
+for (filename in list.files("data/spei_1mn_por40_ref30", full.names=TRUE)){
+  temp_df <- read.csv(filename)
+  spei_1month_df <- rbind(spei_1month_df, temp_df)
+}
+
+for (filename in list.files("data/spei_3mn_por40_ref30", full.names=TRUE)){
+  temp_df <- read.csv(filename)
+  spei_3month_df <- rbind(spei_3month_df, temp_df)
+}
+
+for (filename in list.files("data/spei_6mn_por40_ref30", full.names=TRUE)){
+  temp_df <- read.csv(filename)
+  spei_6month_df <- rbind(spei_6month_df, temp_df)
+}
+
+for (filename in list.files("data/spei_12mn_por60_ref30", full.names=TRUE)){
+  temp_df <- read.csv(filename)
+  spei_12month_df <- rbind(spei_12month_df, temp_df)
+}
+
+rm(temp_df, filename)
+
+# Rename variables and remove invalid values
+spei_1month_df <- spei_1month_df %>%
+  rename(SPEI_1month = values, Phenocam = site, Date = date) %>%
+  mutate(Date = as.Date(Date), Year=year(Date), Month=month(Date), DOY=yday(Date)) %>%
+  mutate(SPEI_1month = replace(SPEI_1month, SPEI_1month==-9999, NA))
+
+spei_3month_df <- spei_3month_df %>%
+  rename(SPEI_3month = values, Phenocam = site, Date = date) %>%
+  mutate(Date = as.Date(Date), Year=year(Date), Month=month(Date), DOY=yday(Date)) %>%
+  mutate(SPEI_3month = replace(SPEI_3month, SPEI_3month==-9999, NA))
+
+spei_6month_df <- spei_6month_df %>%
+  rename(SPEI_6month = values, Phenocam = site, Date = date) %>%
+  mutate(Date = as.Date(Date), Year=year(Date), Month=month(Date), DOY=yday(Date)) %>%
+  mutate(SPEI_6month = replace(SPEI_6month, SPEI_6month==-9999, NA))
+
+spei_12month_df <- spei_12month_df %>%
+  rename(SPEI_12month = values, Phenocam = site, Date = date) %>%
+  mutate(Date = as.Date(Date), Year=year(Date), Month=month(Date), DOY=yday(Date)) %>%
+  mutate(SPEI_12month = replace(SPEI_12month, SPEI_12month==-9999, NA))
+
+# Join dataframes into one
+spei_df <- left_join(spei_1month_df,spei_3month_df, by=join_by(Phenocam,lat,lon,elev,Date,Year,Month,DOY))
+spei_df <- left_join(spei_df,spei_6month_df, by=join_by(Phenocam,lat,lon,elev,Date,Year,Month,DOY))
+spei_df <- left_join(spei_df,spei_12month_df, by=join_by(Phenocam,lat,lon,elev,Date,Year,Month,DOY))
+spei_df <- select(spei_df, Phenocam, lat, lon, elev, Date, Year, Month, DOY, SPEI_1month, SPEI_3month, SPEI_6month, SPEI_12month)
+
+rm(spei_1month_df, spei_3month_df, spei_6month_df, spei_12month_df)
+
+# Sort SPEI into binary categories:
+# >-1: not drought -> 0
+# <=-1: drought -> 1
+
+spei_df <- cbind(spei_df,
+                 SPEI_1month_reclassified = NA,
+                 SPEI_3month_reclassified = NA,
+                 SPEI_6month_reclassified = NA,
+                 SPEI_12month_reclassified = NA)
+
+spei_df <- spei_df %>% mutate(SPEI_1month_reclassified = case_when(SPEI_1month<=-1 ~ 1,
+                                                                   SPEI_1month>-1 ~ 0),
+                              SPEI_3month_reclassified = case_when(SPEI_3month<=-1 ~ 1,
+                                                                   SPEI_3month>-1 ~ 0),
+                              SPEI_6month_reclassified = case_when(SPEI_6month<=-1 ~ 1,
+                                                                   SPEI_6month>-1 ~ 0),
+                              SPEI_12month_reclassified = case_when(SPEI_12month<=-1 ~ 1,
+                                                                    SPEI_12month>-1 ~ 0))
+
+# Record whether SPEI is increasing, decreasing, or same
+
+spei_modified <- data.frame()
+unique_phenocams <- spei_df %>% distinct(Phenocam)
+
+for (i in 1:nrow(unique_phenocams)){
+  phenocam <- unique_phenocams$Phenocam[i]
+  temp_df <- spei_df %>% filter(Phenocam == phenocam)
+  temp_df <- cbind(temp_df, SPEI_1month_change=NA, SPEI_3month_change=NA, SPEI_6month_change=NA, SPEI_12month_change=NA)
+  for (j in 2:nrow(temp_df)){
+    temp_df$SPEI_1month_change[j] <- temp_df$SPEI_1month_reclassified[j] - temp_df$SPEI_1month_reclassified[j-1]
+    temp_df$SPEI_3month_change[j] <- temp_df$SPEI_3month_reclassified[j] - temp_df$SPEI_3month_reclassified[j-1]
+    temp_df$SPEI_6month_change[j] <- temp_df$SPEI_6month_reclassified[j] - temp_df$SPEI_6month_reclassified[j-1]
+    temp_df$SPEI_12month_change[j] <- temp_df$SPEI_12month_reclassified[j] - temp_df$SPEI_12month_reclassified[j-1]
+  }
+  spei_modified <- rbind(spei_modified,temp_df)
+}
+
+# Optional
+rm(temp_df,phenocam,i,j)
+
+# Record SPEI drought period statistics
+# (site, number of consecutive weeks, start date and year, end date and year, sum)
+spei_drought_statistics <- data.frame(matrix(ncol=6,nrow=0))
+colnames(spei_drought_statistics) <- c("Phenocam","Start_Date","Start_Year","End_Date","End_Year","Number_Weeks")
+
+unique_phenocams <- spei_modified %>% distinct(Phenocam)
+for (i in 1:nrow(unique_phenocams)){
+  phenocam <- unique_phenocams$Phenocam[i]
+  temp_df <- spei_modified %>% filter(Phenocam == phenocam)
+  temp_drought_change_1month <- temp_df %>% filter(SPEI_1month_change != 0)
+  temp_drought_change_3month <- temp_df %>% filter(SPEI_3month_change != 0)
+  temp_drought_change_6month <- temp_df %>% filter(SPEI_6month_change != 0)
+  temp_drought_change_12month <- temp_df %>% filter(SPEI_12month_change != 0)
+  
+  # print statements
+  print(paste("i = ",i," out of ",nrow(unique_phenocams),", phenocam = ",phenocam,sep=""))
+  
+  # 6-month SPEI
+  # Check whether there are entries in dataframe
+  if (nrow(temp_drought_change_6month)>0){
+    # Check whether first date is a drought end
+    if (temp_drought_change_6month$SPEI_6month_change[1]==-1){
+      # If first row is drought end, add a new row with drought end date and no other statistics
+      new_row <- data.frame("Phenocam" = phenocam, "Start_Date" = NA, "Start_Year" = NA,
+                            "End_Date" = temp_drought_change_6month$Date[1], "End_Year" = temp_drought_change_6month$Year[1],
+                            "Number_Weeks" = NA)
+      spei_drought_statistics <- rbind(spei_drought_statistics,new_row)
+      
+      # Remove first date from temp_drought_change
+      temp_drought_change_6month <- temp_drought_change_6month[-1,]
+    }
+    # Check whether last date is a drought onset
+    if (nrow(temp_drought_change_6month)>0){
+      if (tail(temp_drought_change_6month,n=1)$SPEI_6month_change==1){
+        # If last row is drought onset, add a new row with drought start date and no other statistics
+        new_row <- data.frame("Phenocam" = phenocam, "Start_Date" = tail(temp_drought_change_6month,n=1)$Date,
+                              "Start_Year" = tail(temp_drought_change_6month,n=1)$Year,
+                              "End_Date" = NA, "End_Year" = NA, "Number_Weeks" = NA)
+        spei_drought_statistics <- rbind(spei_drought_statistics,new_row)
+        
+        # Remove last date from temp_drought_change
+        temp_drought_change_6month <- temp_drought_change_6month[1:nrow(temp_drought_change_6month)-1,]
+      }
+    }
+    # Check for at least one complete drought period
+    if (nrow(temp_drought_change_6month)>=2){
+      temp_start_dates <- filter(temp_drought_change_6month, SPEI_6month_change == 1)
+      temp_end_dates <- filter(temp_drought_change_6month, SPEI_6month_change == -1)
+      # Iterate through all drought periods
+      for (k in 1:nrow(temp_start_dates)){
+        # Calculate drought period statistics
+        start_date <- temp_start_dates$Date[k]
+        start_year <- temp_start_dates$Year[k]
+        end_date <- temp_end_dates$Date[k]
+        end_year <- temp_end_dates$Year[k]
+        temp_drought_period <- filter(temp_df, Date >= start_date & Date < end_date)
+        number_weeks <- nrow(temp_drought_period)
+        
+        new_row <- data.frame("Phenocam" = phenocam, "Start_Date" = start_date, "Start_Year" = start_year,
+                              "End_Date" = end_date, "End_Year" = end_year,
+                              "Number_Weeks" = number_weeks)
+        spei_drought_statistics <- rbind(spei_drought_statistics,new_row)
+      }
+    }
+  }
+}
+
+spei_drought_statistics$End_Date <- as.Date(spei_drought_statistics$End_Date)
+
+# Optional
+rm(unique_phenocams, i, phenocam, temp_df, temp_drought_change, new_row,
+   temp_start_dates, temp_end_dates, k, start_date, start_year, end_date, end_year,
+   temp_drought_period, number_weeks)
+
+###################################
+# Was working on code, stopped here
+
+# Remove drought periods with no corresponding phenocam data
+spei_modified_filtered <- data.frame()
+#site_years <- distinct(site_year_statistics, Phenocam, Year)
+unique_phenocams <- site_year_statistics %>% distinct(Phenocam)
+
+###############
+# Save outputs
+###############
+
 save(drought_statistics,phen_usdm_modified, file="outputs/drought_statistics.RData")
 
 # # Sample plots

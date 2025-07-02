@@ -2341,6 +2341,46 @@ facet_peak <- ggplot(data=temp_data, aes(x=Weighted_Ave_USDM,y=Cumulative_GCC_ye
   ggtitle("Cumulative Yearly GCC vs. Weighted Average USDM")
 facet_peak
 
+##############
+# VPD Anomaly
+##############
+
+# GCC Amplitude vs. Growing-Season VPD Anomaly
+facet_peak <- ggplot(data=temp_data, aes(x=Mean_May_Sept_VPD_Anomaly,y=Amplitude_GCC_yearly)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Yearly GCC Amplitude vs. May-Sept VPD Anomaly")
+facet_peak
+
+###############
+# Average SPEI
+###############
+
+# Peak GCC vs. Current year 3-month SPEI
+facet_peak <- ggplot(data=temp_data, aes(x=Mean_SPEI_3month,y=Peak_GCC_yearly)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Peak GCC vs. Mean 3-month SPEI")
+facet_peak
+
+# GCC Amplitude vs. Previous year 12-month SPEI
+facet_peak <- ggplot(data=temp_data, aes(x=Prev_Year_Mean_SPEI_12month,y=Amplitude_GCC_yearly)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Yearly GCC Amplitude vs. Previous Year Mean 12-month SPEI")
+facet_peak
+
+# GCC Amplitude vs. Current year 6-month SPEI
+facet_peak <- ggplot(data=temp_data, aes(x=Mean_SPEI_6month,y=Amplitude_GCC_yearly)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~Primary_Veg_Type,ncol=2) +
+  ggtitle("Yearly GCC Amplitude vs. Mean 6-month SPEI")
+facet_peak
+
 #######################
 # Yearly drought plots
 #######################
